@@ -1,5 +1,2 @@
 # SignBridge
-
 Application for sign language detection using WLASL
-
-This is inital commit
