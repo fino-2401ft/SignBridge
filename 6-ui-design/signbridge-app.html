@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SignBridge — Auth & Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --primary-pressed: #357ABD;
+      --primary-soft: #E8F1FA;
+      --success: #27AE60;
+      --warning: #F39C12;
+      --error: #E74C3C;
+      --error-soft: #FDECEA;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --text: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --border: #D5DBE1;
+      --radius: 14px;
+      --touch: 48px;
+      --font-display: "Outfit", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, #cfe3f7 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 10%, #d9e8f6 0%, transparent 50%),
+        linear-gradient(165deg, #eef4fa 0%, var(--bg) 45%, #eef2f6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 40px;
+      gap: 20px;
+    }
+
+    .page-header { text-align: center; max-width: 560px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .page-header p { margin-top: 6px; color: var(--text-secondary); font-size: 0.92rem; }
+
+    .demo-chip {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.88rem;
+    }
+    .demo-chip code {
+      font-family: ui-monospace, Consolas, monospace;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.84rem;
+    }
+    .demo-chip button {
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.8rem;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .phone {
+      width: 390px;
+      height: 844px;
+      border-radius: 40px;
+      background: #1a1f26;
+      padding: 12px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 24px 64px rgba(44, 62, 80, 0.22);
+      flex-shrink: 0;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #1a1f26;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 54px;
+      padding: 18px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; min-height: 0; }
+    .screen.active { display: flex; }
+
+    /* —— Auth shared —— */
+    .auth-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      padding: 8px 28px 28px;
+      overflow-y: auto;
+    }
+
+    .auth-shell::before {
+      content: "";
+      position: absolute;
+      inset: -20% -30% auto;
+      height: 50%;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(74, 144, 226, 0.22), transparent 50%),
+        radial-gradient(circle at 75% 20%, rgba(39, 174, 96, 0.12), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hands-art {
+      position: absolute;
+      top: 60px;
+      right: -24px;
+      width: 180px;
+      height: 180px;
+      opacity: 0.16;
+      pointer-events: none;
+    }
+
+    .brand-block { position: relative; z-index: 1; margin-top: 20px; margin-bottom: 28px; }
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 2.2rem;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+    .brand span { color: var(--primary); }
+    .tagline {
+      margin-top: 8px;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      max-width: 22ch;
+      line-height: 1.35;
+    }
+
+    .form {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-wrap input {
+      width: 100%;
+      min-height: var(--touch);
+      padding: 12px 44px 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text);
+      outline: none;
+    }
+    .input-wrap input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.18);
+    }
+    .input-wrap.error input {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.12);
+    }
+    .field-error {
+      font-size: 0.78rem;
+      color: var(--error);
+      font-weight: 500;
+      min-height: 1em;
+    }
+
+    .toggle-pw {
+      position: absolute;
+      right: 6px;
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+    }
+
+    .banner {
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .banner.show { display: flex; }
+    .banner.error { background: var(--error-soft); color: #c0392b; }
+    .banner.warn { background: #FEF5E7; color: #b9770e; }
+    .banner.offline { background: #EEF2F5; color: var(--text); }
+    .banner.success { background: #E8F8F0; color: #1e8449; }
+
+    .btn-primary {
+      margin-top: 4px;
+      min-height: var(--touch);
+      border: none;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.02rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-pressed); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .footer-link {
+      margin-top: auto;
+      padding-top: 20px;
+      text-align: center;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+    .footer-link a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* —— Home —— */
+    .home-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 20px 88px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .home-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .greeting .hi {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+    .greeting .sub {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #6bb0f0);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      display: grid;
+      place-items: center;
+      border: none;
+      cursor: pointer;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 14px 12px;
+    }
+    .stat .label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat .value {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.45rem;
+      margin-top: 4px;
+      letter-spacing: -0.03em;
+    }
+    .stat .value.streak { color: var(--warning); }
+    .stat .value.xp { color: var(--primary); }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .path-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .path-card.locked { opacity: 0.72; }
+    .path-card.locked .path-cta { color: var(--text-secondary); }
+
+    .path-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      background: var(--primary-soft);
+    }
+    .path-card.locked .path-icon { background: #EEF2F5; }
+
+    .path-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: -0.02em;
+    }
+    .path-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: #E8ECF0;
+      border-radius: 99px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+      width: 0%;
+    }
+    .path-card.locked .progress-fill { background: #B0B8BF; }
+
+    .path-cta {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .tab-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 72px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 8px 16px;
+      z-index: 5;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .tab.active { color: var(--primary); }
+    .tab .ico { font-size: 1.15rem; line-height: 1; }
+
+    /* Profile sheet */
+    .sheet-backdrop {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(44, 62, 80, 0.35);
+      z-index: 20;
+      align-items: flex-end;
+    }
+    .sheet-backdrop.show { display: flex; }
+    .sheet {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 20px 22px 36px;
+    }
+    .sheet h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .sheet p { color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px; }
+    .btn-ghost {
+      width: 100%;
+      min-height: 48px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--error);
+      cursor: pointer;
+    }
+
+    .toast {
+      position: absolute;
+      top: 58px;
+      left: 20px;
+      right: 20px;
+      z-index: 30;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #1e8449;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .toast.show { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; }
+      .toast.show { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>SignBridge · Login / Sign Up / Home</h1>
+    <p>Prototype theo PRD FR-001 · FR-002 · FR-006 — dữ liệu lưu local (localStorage).</p>
+    <div class="demo-chip">
+      <span>Tài khoản demo:</span>
+      <code>demo@signbridge.app</code>
+      <code>Demo1234</code>
+      <button type="button" id="fillDemo">Điền &amp; đăng nhập</button>
+    </div>
+  </header>
+
+  <div class="phone" aria-label="SignBridge app prototype">
+    <div class="phone-screen">
+      <div class="notch" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● ◾</span>
+      </div>
+
+      <!-- LOGIN -->
+      <section class="screen active" id="screen-login" aria-label="Login">
+        <div class="auth-shell">
+          <svg class="hands-art" viewBox="0 0 200 200" aria-hidden="true">
+            <path fill="#4A90E2" d="M70 120c-8-22 4-48 22-58 10-6 22-4 28 6 4-14 18-22 32-16 12 5 18 18 16 30 14 2 24 16 22 30-3 18-20 28-38 26-6 14-22 22-38 18-18-4-32-20-44-36z"/>
+          </svg>
+          <div class="brand-block">
+            <div class="brand">Sign<span>Bridge</span></div>
+            <p class="tagline">Learn &amp; translate ASL in real time</p>
+          </div>
+          <form class="form" id="loginForm" novalidate>
+            <div class="banner" id="loginBanner" role="alert"></div>
+            <div class="field">
+              <label for="loginEmail">Email</label>
+              <div class="input-wrap" id="loginEmailWrap">
+                <input id="loginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
+              </div>
+              <div class="field-error" id="loginEmailErr"></div>
+            </div>
+            <div class="field">
+              <label for="loginPassword">Password</label>
+              <div class="input-wrap" id="loginPasswordWrap">
+                <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter your password" />
+                <button type="button" class="toggle-pw" data-target="loginPassword" aria-label="Show password">👁</button>
+              </div>
+              <div class="field-error" id="loginPasswordErr"></div>
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn"><span>Log In</span></button>
+            <p class="footer-link">New here? <a id="goSignup">Create an account</a></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- SIGNUP -->
+      <section class="screen" id="screen-signup" aria-label="Sign up">
+        <div class="auth-shell">
+          <div class="brand-block">
+            <div class="brand">Sign<span>Bridge</span></div>
+            <p class="tagline">Create your account to start learning ASL</p>
+          </div>
+          <form class="form" id="signupForm" novalidate>
+            <div class="banner" id="signupBanner" role="alert"></div>
+            <div class="field">
+              <label for="signupEmail">Email</label>
+              <div class="input-wrap" id="signupEmailWrap">
+                <input id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+              </div>
+              <div class="field-error" id="signupEmailErr"></div>
+            </div>
+            <div class="field">
+              <label for="signupPassword">Password</label>
+              <div class="input-wrap" id="signupPasswordWrap">
+                <input id="signupPassword" type="password" autocomplete="new-password" placeholder="Min. 8 chars, 1 upper, 1 number" />
+                <button type="button" class="toggle-pw" data-target="signupPassword" aria-label="Show password">👁</button>
+              </div>
+              <div class="field-error" id="signupPasswordErr"></div>
+            </div>
+            <div class="field">
+              <label for="signupConfirm">Confirm password</label>
+              <div class="input-wrap" id="signupConfirmWrap">
+                <input id="signupConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password" />
+                <button type="button" class="toggle-pw" data-target="signupConfirm" aria-label="Show password">👁</button>
+              </div>
+              <div class="field-error" id="signupConfirmErr"></div>
+            </div>
+            <p class="hint">Password must be at least 8 characters, include 1 uppercase letter and 1 number.</p>
+            <button type="submit" class="btn-primary" id="signupBtn"><span>Register</span></button>
+            <p class="footer-link">Already have an account? <a id="goLogin">Log In</a></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- HOME -->
+      <section class="screen" id="screen-home" aria-label="Home">
+        <div class="home-scroll">
+          <div class="home-top">
+            <div class="greeting">
+              <div class="hi" id="homeHi">Welcome back</div>
+              <div class="sub">Continue your ASL journey</div>
+            </div>
+            <button type="button" class="avatar" id="avatarBtn" aria-label="Profile">D</button>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div class="label">Streak</div>
+              <div class="value streak" id="statStreak">12</div>
+            </div>
+            <div class="stat">
+              <div class="label">Total XP</div>
+              <div class="value xp" id="statXp">1,247</div>
+            </div>
+          </div>
+
+          <h2 class="section-title">Learning paths</h2>
+          <div id="pathList"></div>
+        </div>
+
+        <nav class="tab-bar" aria-label="Main">
+          <button type="button" class="tab active"><span class="ico">⌂</span>Home</button>
+          <button type="button" class="tab"><span class="ico">⌕</span>Dictionary</button>
+          <button type="button" class="tab"><span class="ico">◎</span>Practice</button>
+          <button type="button" class="tab"><span class="ico">⇄</span>Translate</button>
+        </nav>
+
+        <div class="sheet-backdrop" id="profileSheet">
+          <div class="sheet">
+            <h3 id="sheetName">Demo User</h3>
+            <p id="sheetEmail">demo@signbridge.app</p>
+            <button type="button" class="btn-ghost" id="logoutBtn">Log out</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const DEMO = {
+      email: "demo@signbridge.app",
+      password: "Demo1234",
+      displayName: "Demo User",
+      xp: 1247,
+      streak: 12,
+      role: "user",
+    };
+
+    const PATHS = [
+      {
+        id: "path-basics",
+        title: "Basics of ASL",
+        lessons: 5,
+        minutes: 45,
+        progress: 80,
+        locked: false,
+        icon: "👋",
+        cta: "Continue Learning",
+      },
+      {
+        id: "path-numbers",
+        title: "Numbers & Counting",
+        lessons: 6,
+        minutes: 40,
+        progress: 20,
+        locked: false,
+        icon: "🔢",
+        cta: "Continue Learning",
+      },
+      {
+        id: "path-family",
+        title: "Family & Relationships",
+        lessons: 8,
+        minutes: 60,
+        progress: 0,
+        locked: true,
+        icon: "🔒",
+        cta: "Complete Basics to unlock",
+      },
+      {
+        id: "path-colors",
+        title: "Colors & Descriptors",
+        lessons: 4,
+        minutes: 30,
+        progress: 0,
+        locked: true,
+        icon: "🔒",
+        cta: "Requires 500 XP",
+      },
+    ];
+
+    const USERS_KEY = "signbridge_users_v1";
+    const SESSION_KEY = "signbridge_session_v1";
+
+    function loadUsers() {
+      const raw = localStorage.getItem(USERS_KEY);
+      let users = raw ? JSON.parse(raw) : {};
+      if (!users[DEMO.email]) {
+        users[DEMO.email] = { ...DEMO };
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }
+      return users;
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    function getSession() {
+      const email = localStorage.getItem(SESSION_KEY);
+      if (!email) return null;
+      const users = loadUsers();
+      return users[email] || null;
+    }
+
+    function setSession(email) {
+      localStorage.setItem(SESSION_KEY, email);
+    }
+
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+    }
+
+    function showScreen(name) {
+      document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
+      document.getElementById("screen-" + name).classList.add("active");
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2800);
+    }
+
+    function setBanner(el, type, text) {
+      if (!text) {
+        el.className = "banner";
+        el.textContent = "";
+        return;
+      }
+      el.className = "banner show " + type;
+      el.textContent = text;
+    }
+
+    function clearFieldErrors(prefix) {
+      ["Email", "Password", "Confirm"].forEach((f) => {
+        const wrap = document.getElementById(prefix + f + "Wrap");
+        const err = document.getElementById(prefix + f + "Err");
+        if (wrap) wrap.classList.remove("error");
+        if (err) err.textContent = "";
+      });
+    }
+
+    function setFieldError(wrapId, errId, msg) {
+      document.getElementById(wrapId).classList.add("error");
+      document.getElementById(errId).textContent = msg;
+    }
+
+    function validEmail(v) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    }
+
+    function validPassword(v) {
+      if (v.length < 8) return "Password must be at least 8 characters";
+      if (!/[A-Z]/.test(v)) return "Password must contain an uppercase letter";
+      if (!/[0-9]/.test(v)) return "Password must contain a number";
+      return null;
+    }
+
+    function setButtonLoading(btn, on, idleLabel) {
+      btn.disabled = on;
+      const span = btn.querySelector("span");
+      let spinner = btn.querySelector(".spinner");
+      if (on) {
+        if (!spinner) {
+          spinner = document.createElement("span");
+          spinner.className = "spinner";
+          btn.insertBefore(spinner, span);
+        }
+        span.textContent = idleLabel === "Register" ? "Creating…" : "Signing in…";
+      } else {
+        if (spinner) spinner.remove();
+        span.textContent = idleLabel;
+      }
+    }
+
+    function renderHome(user) {
+      const first = (user.displayName || user.email.split("@")[0]).split(" ")[0];
+      document.getElementById("homeHi").textContent = "Hi, " + first;
+      document.getElementById("statStreak").textContent = String(user.streak ?? 0);
+      document.getElementById("statXp").textContent = Number(user.xp || 0).toLocaleString("en-US");
+      document.getElementById("avatarBtn").textContent = (user.displayName || "U").charAt(0).toUpperCase();
+      document.getElementById("sheetName").textContent = user.displayName || "Learner";
+      document.getElementById("sheetEmail").textContent = user.email;
+
+      const list = document.getElementById("pathList");
+      list.innerHTML = PATHS.map((p) => `
+        <article class="path-card ${p.locked ? "locked" : ""}">
+          <div class="path-icon">${p.icon}</div>
+          <div>
+            <div class="path-title">${p.title}</div>
+            <div class="path-meta">${p.lessons} lessons · ${p.minutes} min</div>
+            <div class="progress-track"><div class="progress-fill" style="width:${p.progress}%"></div></div>
+            <div class="path-cta">${p.cta}${!p.locked && p.progress > 0 ? " · " + p.progress + "%" : ""}</div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function goHome(user) {
+      renderHome(user);
+      showScreen("home");
+    }
+
+    // Navigation
+    document.getElementById("goSignup").addEventListener("click", (e) => {
+      e.preventDefault();
+      showScreen("signup");
+    });
+    document.getElementById("goLogin").addEventListener("click", (e) => {
+      e.preventDefault();
+      showScreen("login");
+    });
+
+    document.querySelectorAll(".toggle-pw").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        input.type = input.type === "password" ? "text" : "password";
+      });
+    });
+
+    // Demo fill
+    document.getElementById("fillDemo").addEventListener("click", () => {
+      loadUsers();
+      document.getElementById("loginEmail").value = DEMO.email;
+      document.getElementById("loginPassword").value = DEMO.password;
+      showScreen("login");
+      document.getElementById("loginForm").requestSubmit();
+    });
+
+    // Login
+    let failCount = 0;
+    let lockUntil = 0;
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors("login");
+      setBanner(document.getElementById("loginBanner"), "", "");
+
+      if (Date.now() < lockUntil) {
+        const sec = Math.ceil((lockUntil - Date.now()) / 1000);
+        setBanner(document.getElementById("loginBanner"), "warn", `Too many attempts. Please try again in ${sec} seconds.`);
+        return;
+      }
+
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const password = document.getElementById("loginPassword").value;
+      let ok = true;
+
+      if (!validEmail(email)) {
+        setFieldError("loginEmailWrap", "loginEmailErr", "Please enter a valid email address");
+        ok = false;
+      }
+      if (!password) {
+        setFieldError("loginPasswordWrap", "loginPasswordErr", "Please enter your password");
+        ok = false;
+      }
+      if (!ok) return;
+
+      const btn = document.getElementById("loginBtn");
+      setButtonLoading(btn, true, "Log In");
+      await new Promise((r) => setTimeout(r, 700));
+
+      const users = loadUsers();
+      const user = users[email];
+      if (!user || user.password !== password) {
+        failCount += 1;
+        document.getElementById("loginPassword").value = "";
+        setBanner(document.getElementById("loginBanner"), "error", "Invalid email or password");
+        setFieldError("loginPasswordWrap", "loginPasswordErr", "");
+        if (failCount >= 5) {
+          lockUntil = Date.now() + 30000;
+          failCount = 0;
+          setBanner(document.getElementById("loginBanner"), "warn", "Too many attempts. Please try again in 30 seconds.");
+        }
+        setButtonLoading(btn, false, "Log In");
+        return;
+      }
+
+      failCount = 0;
+      setSession(email);
+      setButtonLoading(btn, false, "Log In");
+      goHome(user);
+      showToast("Welcome back!");
+    });
+
+    // Signup
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFieldErrors("signup");
+      setBanner(document.getElementById("signupBanner"), "", "");
+
+      const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+      const password = document.getElementById("signupPassword").value;
+      const confirm = document.getElementById("signupConfirm").value;
+      let ok = true;
+
+      if (!validEmail(email)) {
+        setFieldError("signupEmailWrap", "signupEmailErr", "Please enter a valid email address");
+        ok = false;
+      }
+      const pwErr = validPassword(password);
+      if (pwErr) {
+        setFieldError("signupPasswordWrap", "signupPasswordErr", pwErr);
+        ok = false;
+      }
+      if (confirm !== password) {
+        setFieldError("signupConfirmWrap", "signupConfirmErr", "Passwords do not match");
+        ok = false;
+      }
+      if (!ok) return;
+
+      const users = loadUsers();
+      if (users[email]) {
+        setBanner(document.getElementById("signupBanner"), "error", "This email is already registered. Try logging in.");
+        document.getElementById("signupPassword").value = "";
+        document.getElementById("signupConfirm").value = "";
+        return;
+      }
+
+      const btn = document.getElementById("signupBtn");
+      setButtonLoading(btn, true, "Register");
+      await new Promise((r) => setTimeout(r, 800));
+
+      users[email] = {
+        email,
+        password,
+        displayName: email.split("@")[0],
+        xp: 0,
+        streak: 0,
+        role: "user",
+      };
+      saveUsers(users);
+      setButtonLoading(btn, false, "Register");
+
+      document.getElementById("loginEmail").value = email;
+      document.getElementById("loginPassword").value = "";
+      showScreen("login");
+      setBanner(document.getElementById("loginBanner"), "success", "Registration successful — sign in to continue");
+      showToast("Registration successful");
+    });
+
+    // Profile / logout
+    document.getElementById("avatarBtn").addEventListener("click", () => {
+      document.getElementById("profileSheet").classList.add("show");
+    });
+    document.getElementById("profileSheet").addEventListener("click", (e) => {
+      if (e.target.id === "profileSheet") e.currentTarget.classList.remove("show");
+    });
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      clearSession();
+      document.getElementById("profileSheet").classList.remove("show");
+      document.getElementById("loginPassword").value = "";
+      setBanner(document.getElementById("loginBanner"), "success", "Logged out successfully");
+      showScreen("login");
+      showToast("Logged out successfully");
+    });
+
+    // Boot: auto-login if session
+    loadUsers();
+    const session = getSession();
+    if (session) {
+      goHome(session);
+    } else {
+      showScreen("login");
+    }
+  </script>
+</body>
+</html>
