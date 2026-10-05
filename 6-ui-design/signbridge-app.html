@@ -349,35 +349,134 @@
       cursor: pointer;
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 22px;
-    }
-
-    .stat {
+    .progress-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 14px 12px;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(44, 62, 80, 0.04);
     }
-    .stat .label {
-      font-size: 0.72rem;
+    .progress-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .level-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: #fff;
+      background: linear-gradient(145deg, #D4A017, #E8C547);
+      box-shadow: 0 4px 12px rgba(212, 160, 23, 0.35);
+      flex-shrink: 0;
+    }
+    .level-badge.silver { background: linear-gradient(145deg, #8E9AA3, #C5CCD2); }
+    .level-badge.bronze { background: linear-gradient(145deg, #C68642, #E0A86A); }
+    .level-badge.gray { background: linear-gradient(145deg, #95A5A6, #BDC3C7); }
+    .level-meta .name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+    }
+    .level-meta .lvl {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .metric .m-label {
+      font-size: 0.68rem;
       font-weight: 600;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.03em;
     }
-    .stat .value {
+    .metric .m-value {
       font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 1.45rem;
-      margin-top: 4px;
-      letter-spacing: -0.03em;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-top: 2px;
+      letter-spacing: -0.02em;
     }
-    .stat .value.streak { color: var(--warning); }
-    .stat .value.xp { color: var(--primary); }
+    .metric .m-value.streak { color: var(--warning); }
+    .metric .m-value.xp { color: var(--primary); }
+    .overall {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .overall .pct {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+    .overall-track {
+      height: 10px;
+      background: #E8ECF0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .overall-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #6bb0f0);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .quick-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .quick-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+    .quick-btn .q-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      background: var(--primary-soft);
+    }
 
     .section-title {
       font-family: var(--font-display);
@@ -397,8 +496,13 @@
       grid-template-columns: 52px 1fr;
       gap: 12px;
       align-items: start;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
     }
-    .path-card.locked { opacity: 0.72; }
+    .path-card.locked { opacity: 0.72; cursor: not-allowed; }
     .path-card.locked .path-cta { color: var(--text-secondary); }
 
     .path-icon {
@@ -451,19 +555,19 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 72px;
+      height: 78px;
       background: var(--surface);
       border-top: 1px solid var(--border);
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      padding: 8px 8px 16px;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px 4px 18px;
       z-index: 5;
     }
     .tab {
       border: none;
       background: transparent;
       font-family: var(--font-body);
-      font-size: 0.68rem;
+      font-size: 0.62rem;
       font-weight: 600;
       color: var(--text-secondary);
       display: flex;
@@ -471,9 +575,20 @@
       align-items: center;
       gap: 4px;
       cursor: pointer;
+      min-height: 48px;
+      justify-content: center;
     }
     .tab.active { color: var(--primary); }
-    .tab .ico { font-size: 1.15rem; line-height: 1; }
+    .tab .ico {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+    .tab.active .ico { background: var(--primary-soft); }
 
     /* Profile sheet */
     .sheet-backdrop {
@@ -538,7 +653,7 @@
 <body>
   <header class="page-header">
     <h1>SignBridge · Login / Sign Up / Home</h1>
-    <p>Prototype theo PRD FR-001 · FR-002 · FR-006 — dữ liệu lưu local (localStorage).</p>
+    <p>Prototype theo PRD FR-001 · FR-002 · FR-006 · FR-008 — dữ liệu lưu local (localStorage).</p>
     <div class="demo-chip">
       <span>Tài khoản demo:</span>
       <code>demo@signbridge.app</code>
@@ -639,15 +754,45 @@
             <button type="button" class="avatar" id="avatarBtn" aria-label="Profile">D</button>
           </div>
 
-          <div class="stats-row">
-            <div class="stat">
-              <div class="label">Streak</div>
-              <div class="value streak" id="statStreak">12</div>
+          <section class="progress-card" aria-label="Learning progress">
+            <div class="progress-head">
+              <div class="level-badge" id="levelBadge">5</div>
+              <div class="level-meta">
+                <div class="name" id="progressName">Demo User</div>
+                <div class="lvl" id="levelLabel">Level 5 · Gold</div>
+              </div>
             </div>
-            <div class="stat">
-              <div class="label">Total XP</div>
-              <div class="value xp" id="statXp">1,247</div>
+            <div class="metrics-grid">
+              <div class="metric">
+                <div class="m-label">Streak</div>
+                <div class="m-value streak" id="statStreak">12 days</div>
+              </div>
+              <div class="metric">
+                <div class="m-label">Total XP</div>
+                <div class="m-value xp" id="statXp">1,247</div>
+              </div>
+              <div class="metric">
+                <div class="m-label">Lessons</div>
+                <div class="m-value" id="statLessons">15/28</div>
+              </div>
+              <div class="metric">
+                <div class="m-label">Paths</div>
+                <div class="m-value" id="statPaths">1/3</div>
+              </div>
             </div>
+            <div class="overall">
+              <span>Overall progress</span>
+              <span class="pct" id="overallPct">53%</span>
+            </div>
+            <div class="overall-track">
+              <div class="overall-fill" id="overallFill" style="width:53%"></div>
+            </div>
+          </section>
+
+          <div class="quick-row" aria-label="Quick actions">
+            <button type="button" class="quick-btn"><span class="q-ico">◎</span>Practice</button>
+            <button type="button" class="quick-btn"><span class="q-ico">⇄</span>Translate</button>
+            <button type="button" class="quick-btn"><span class="q-ico">⌕</span>Dictionary</button>
           </div>
 
           <h2 class="section-title">Learning paths</h2>
@@ -655,10 +800,11 @@
         </div>
 
         <nav class="tab-bar" aria-label="Main">
-          <button type="button" class="tab active"><span class="ico">⌂</span>Home</button>
-          <button type="button" class="tab"><span class="ico">⌕</span>Dictionary</button>
+          <button type="button" class="tab active"><span class="ico">⌂</span>Learn</button>
           <button type="button" class="tab"><span class="ico">◎</span>Practice</button>
           <button type="button" class="tab"><span class="ico">⇄</span>Translate</button>
+          <button type="button" class="tab"><span class="ico">⌕</span>Dictionary</button>
+          <button type="button" class="tab" id="tabProfile"><span class="ico">☺</span>Profile</button>
         </nav>
 
         <div class="sheet-backdrop" id="profileSheet">
@@ -679,49 +825,53 @@
       displayName: "Demo User",
       xp: 1247,
       streak: 12,
+      completedLessons: 15,
+      totalLessons: 28,
+      completedPaths: 1,
+      totalPaths: 3,
       role: "user",
     };
 
     const PATHS = [
       {
         id: "path-basics",
-        title: "Basics of ASL",
-        lessons: 5,
-        minutes: 45,
+        title: "ASL Basics",
+        lessons: 8,
+        minutes: 60,
         progress: 80,
         locked: false,
         icon: "👋",
         cta: "Continue Learning",
       },
       {
-        id: "path-numbers",
-        title: "Numbers & Counting",
-        lessons: 6,
-        minutes: 40,
+        id: "path-everyday",
+        title: "Everyday Communication",
+        lessons: 8,
+        minutes: 70,
         progress: 20,
         locked: false,
-        icon: "🔢",
+        icon: "💬",
         cta: "Continue Learning",
       },
       {
-        id: "path-family",
-        title: "Family & Relationships",
+        id: "path-advanced",
+        title: "Advanced Conversations",
         lessons: 8,
-        minutes: 60,
+        minutes: 80,
         progress: 0,
         locked: true,
         icon: "🔒",
-        cta: "Complete Basics to unlock",
+        cta: "Complete Everyday Communication to unlock",
       },
       {
-        id: "path-colors",
-        title: "Colors & Descriptors",
+        id: "path-emergency",
+        title: "Emergency Phrases",
         lessons: 4,
-        minutes: 30,
+        minutes: 25,
         progress: 0,
         locked: true,
         icon: "🔒",
-        cta: "Requires 500 XP",
+        cta: "Requires 1,500 XP",
       },
     ];
 
@@ -821,26 +971,50 @@
       }
     }
 
+    function getLevel(xp) {
+      if (xp >= 1000) return { level: 5 + Math.floor((xp - 1000) / 500), tier: "Gold", css: "" };
+      if (xp >= 500) return { level: 4, tier: "Silver", css: "silver" };
+      if (xp >= 250) return { level: 3, tier: "Bronze", css: "bronze" };
+      if (xp >= 100) return { level: 2, tier: "White", css: "gray" };
+      return { level: 1, tier: "Starter", css: "gray" };
+    }
+
     function renderHome(user) {
       const first = (user.displayName || user.email.split("@")[0]).split(" ")[0];
+      const xp = Number(user.xp || 0);
+      const lvl = getLevel(xp);
+      const completedLessons = user.completedLessons ?? 0;
+      const totalLessons = user.totalLessons ?? 28;
+      const completedPaths = user.completedPaths ?? 0;
+      const totalPaths = user.totalPaths ?? 3;
+      const overall = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
       document.getElementById("homeHi").textContent = "Hi, " + first;
-      document.getElementById("statStreak").textContent = String(user.streak ?? 0);
-      document.getElementById("statXp").textContent = Number(user.xp || 0).toLocaleString("en-US");
       document.getElementById("avatarBtn").textContent = (user.displayName || "U").charAt(0).toUpperCase();
       document.getElementById("sheetName").textContent = user.displayName || "Learner";
       document.getElementById("sheetEmail").textContent = user.email;
+      document.getElementById("progressName").textContent = user.displayName || "Learner";
+      document.getElementById("levelBadge").textContent = String(lvl.level);
+      document.getElementById("levelBadge").className = "level-badge " + lvl.css;
+      document.getElementById("levelLabel").textContent = "Level " + lvl.level + " · " + lvl.tier;
+      document.getElementById("statStreak").textContent = (user.streak ?? 0) + " days";
+      document.getElementById("statXp").textContent = xp.toLocaleString("en-US");
+      document.getElementById("statLessons").textContent = completedLessons + "/" + totalLessons;
+      document.getElementById("statPaths").textContent = completedPaths + "/" + totalPaths;
+      document.getElementById("overallPct").textContent = overall + "%";
+      document.getElementById("overallFill").style.width = overall + "%";
 
       const list = document.getElementById("pathList");
       list.innerHTML = PATHS.map((p) => `
-        <article class="path-card ${p.locked ? "locked" : ""}">
+        <button type="button" class="path-card ${p.locked ? "locked" : ""}">
           <div class="path-icon">${p.icon}</div>
           <div>
             <div class="path-title">${p.title}</div>
             <div class="path-meta">${p.lessons} lessons · ${p.minutes} min</div>
-            <div class="progress-track"><div class="progress-fill" style="width:${p.progress}%"></div></div>
-            <div class="path-cta">${p.cta}${!p.locked && p.progress > 0 ? " · " + p.progress + "%" : ""}</div>
+            ${!p.locked ? `<div class="progress-track"><div class="progress-fill" style="width:${p.progress}%"></div></div>` : ""}
+            <div class="path-cta">${p.cta}${!p.locked && p.progress > 0 && p.progress < 100 ? " · " + p.progress + "%" : ""}</div>
           </div>
-        </article>
+        </button>
       `).join("");
     }
 
@@ -989,6 +1163,9 @@
 
     // Profile / logout
     document.getElementById("avatarBtn").addEventListener("click", () => {
+      document.getElementById("profileSheet").classList.add("show");
+    });
+    document.getElementById("tabProfile").addEventListener("click", () => {
       document.getElementById("profileSheet").classList.add("show");
     });
     document.getElementById("profileSheet").addEventListener("click", (e) => {

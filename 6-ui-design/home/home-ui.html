@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SignBridge — Home UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --primary-pressed: #357ABD;
+      --primary-soft: #E8F1FA;
+      --success: #27AE60;
+      --success-soft: #E8F8EF;
+      --warning: #F39C12;
+      --warning-soft: #FEF5E7;
+      --error: #E74C3C;
+      --error-soft: #FDECEA;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --text: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --border: #D5DBE1;
+      --radius: 14px;
+      --touch: 48px;
+      --font-display: "Outfit", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+      --level-gold: #D4A017;
+      --level-silver: #A8B0B8;
+      --level-bronze: #C68642;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, #cfe3f7 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 10%, #d9e8f6 0%, transparent 50%),
+        linear-gradient(165deg, #eef4fa 0%, var(--bg) 45%, #eef2f6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 48px;
+      gap: 20px;
+    }
+
+    .page-header { text-align: center; max-width: 640px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+    }
+    .page-header p {
+      margin-top: 6px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 720px;
+    }
+    .toolbar button {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+    .toolbar button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .phone {
+      width: 390px;
+      height: 844px;
+      border-radius: 40px;
+      background: #1a1f26;
+      padding: 12px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 24px 64px rgba(44, 62, 80, 0.22);
+      flex-shrink: 0;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #1a1f26;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 54px;
+      padding: 18px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .home-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 18px 96px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* —— Header —— */
+    .home-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .greeting .hi {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.32rem;
+      letter-spacing: -0.03em;
+    }
+    .greeting .sub {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #6bb0f0);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(74, 144, 226, 0.35);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* —— Progress Card (FR-008) —— */
+    .progress-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 16px rgba(44, 62, 80, 0.04);
+    }
+    .progress-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .level-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: #fff;
+      background: linear-gradient(145deg, var(--level-gold), #E8C547);
+      box-shadow: 0 4px 12px rgba(212, 160, 23, 0.35);
+      flex-shrink: 0;
+    }
+    .level-badge.silver { background: linear-gradient(145deg, #8E9AA3, #C5CCD2); box-shadow: 0 4px 12px rgba(142,154,163,0.35); }
+    .level-badge.bronze { background: linear-gradient(145deg, var(--level-bronze), #E0A86A); box-shadow: 0 4px 12px rgba(198,134,66,0.35); }
+    .level-badge.gray { background: linear-gradient(145deg, #95A5A6, #BDC3C7); box-shadow: 0 4px 12px rgba(149,165,166,0.3); }
+    .level-meta .name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+    }
+    .level-meta .lvl {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .metric .ico {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .metric .ico.flame { background: var(--warning-soft); }
+    .metric .ico.star { background: var(--primary-soft); }
+    .metric .ico.book { background: var(--success-soft); }
+    .metric .ico.rocket { background: #F0E8FA; }
+    .metric .m-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .metric .m-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .metric .m-value.streak { color: var(--warning); }
+    .metric .m-value.xp { color: var(--primary); }
+
+    .overall {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .overall .label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .overall .pct {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+    .progress-track {
+      height: 10px;
+      background: #E8ECF0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #6bb0f0);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* —— Quick Actions —— */
+    .quick-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .quick-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      min-height: var(--touch);
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+    }
+    .quick-btn:active { transform: scale(0.96); }
+    .quick-btn:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px rgba(74, 144, 226, 0.12);
+    }
+    .quick-btn .q-ico {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+    }
+    .quick-btn.practice .q-ico { background: var(--success-soft); }
+    .quick-btn.translate .q-ico { background: var(--primary-soft); }
+    .quick-btn.dictionary .q-ico { background: var(--warning-soft); }
+    .quick-btn span {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    /* —— Section —— */
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+    .section-link {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* —— Path Cards (FR-006) —— */
+    .path-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 12px;
+      align-items: start;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+      text-align: left;
+      width: 100%;
+      font: inherit;
+      color: inherit;
+    }
+    .path-card:not(.locked):hover {
+      border-color: #b8d4f0;
+      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.1);
+    }
+    .path-card:not(.locked):active { transform: scale(0.985); }
+    .path-card.locked {
+      opacity: 0.78;
+      cursor: not-allowed;
+      background: #FAFBFC;
+    }
+
+    .path-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      background: var(--primary-soft);
+      position: relative;
+    }
+    .path-card.locked .path-icon {
+      background: #EEF2F5;
+      filter: grayscale(0.4);
+    }
+    .lock-chip {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      color: #fff;
+      font-size: 0.65rem;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--surface);
+    }
+
+    .path-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: -0.02em;
+    }
+    .path-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .path-track {
+      height: 8px;
+      background: #E8ECF0;
+      border-radius: 99px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .path-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 99px;
+      transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .path-card.locked .path-fill { background: #B0B8BF; }
+    .path-cta {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .path-card.locked .path-cta { color: var(--text-secondary); font-weight: 600; }
+    .path-cta .pill {
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    /* —— States —— */
+    .state-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 36px 20px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+    .state-box.show { display: flex; }
+    .state-box .art {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      margin-bottom: 14px;
+      background: var(--primary-soft);
+    }
+    .state-box.error .art { background: var(--error-soft); }
+    .state-box h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .state-box p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      max-width: 260px;
+    }
+    .btn-retry {
+      margin-top: 16px;
+      min-height: 44px;
+      padding: 0 22px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .btn-retry:active { background: var(--primary-pressed); }
+
+    /* Skeleton */
+    .skeleton-list { display: none; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .skeleton-list.show { display: flex; }
+    .skel-card {
+      height: 96px;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #E8ECF0 25%, #F4F6F8 50%, #E8ECF0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* —— Tab Bar (5 tabs — ROADMAP) —— */
+    .tab-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 78px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px 4px 18px;
+      z-index: 5;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      min-height: 48px;
+      justify-content: center;
+    }
+    .tab.active { color: var(--primary); }
+    .tab .ico {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+    .tab.active .ico { background: var(--primary-soft); }
+
+    /* Toast */
+    .toast {
+      position: absolute;
+      top: 58px;
+      left: 18px;
+      right: 18px;
+      z-index: 30;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #2C3E50;
+      color: #fff;
+      font-size: 0.86rem;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    }
+    .toast.show { display: block; animation: fadeIn 0.25s ease; }
+    .toast.unlock { background: var(--warning); }
+    .toast.ok { background: #1e8449; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skel-card { animation: none; }
+      .progress-fill, .path-fill { transition: none; }
+      .toast.show { animation: none; }
+    }
+
+    .spec-note {
+      max-width: 390px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .spec-note code {
+      font-family: ui-monospace, Consolas, monospace;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>SignBridge · Home Screen</h1>
+    <p>Prototype theo PRD <strong>FR-006</strong> (Learning Path Display) &amp; <strong>FR-008</strong> (Progress Tracking) — Visual-First shell.</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="Preview states">
+    <button type="button" class="active" data-state="ready">Ready</button>
+    <button type="button" data-state="loading">Loading</button>
+    <button type="button" data-state="empty">Empty</button>
+    <button type="button" data-state="error">Error</button>
+  </div>
+
+  <div class="phone" aria-label="SignBridge Home prototype">
+    <div class="phone-screen">
+      <div class="notch" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● ◾</span>
+      </div>
+
+      <div class="home-scroll">
+        <div class="home-top">
+          <div class="greeting">
+            <div class="hi" id="homeHi">Hi, Sarah</div>
+            <div class="sub">Continue your ASL journey</div>
+          </div>
+          <button type="button" class="avatar" id="avatarBtn" aria-label="Open profile">S</button>
+        </div>
+
+        <!-- FR-008 Progress Card -->
+        <section class="progress-card" aria-label="Learning progress">
+          <div class="progress-head">
+            <div class="level-badge" id="levelBadge" aria-hidden="true">5</div>
+            <div class="level-meta">
+              <div class="name" id="userName">Sarah Chen</div>
+              <div class="lvl" id="levelLabel">Level 5 · Gold</div>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="ico flame" aria-hidden="true">🔥</div>
+              <div>
+                <div class="m-label">Streak</div>
+                <div class="m-value streak" id="statStreak">12 days</div>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="ico star" aria-hidden="true">⭐</div>
+              <div>
+                <div class="m-label">Total XP</div>
+                <div class="m-value xp" id="statXp">1,247</div>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="ico book" aria-hidden="true">📚</div>
+              <div>
+                <div class="m-label">Lessons</div>
+                <div class="m-value" id="statLessons">15/28</div>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="ico rocket" aria-hidden="true">🚀</div>
+              <div>
+                <div class="m-label">Paths</div>
+                <div class="m-value" id="statPaths">1/3</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overall">
+            <span class="label">Overall progress</span>
+            <span class="pct" id="overallPct">53%</span>
+          </div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="53" id="overallBar">
+            <div class="progress-fill" id="overallFill" style="width: 53%"></div>
+          </div>
+        </section>
+
+        <!-- Quick actions -->
+        <div class="quick-row" aria-label="Quick actions">
+          <button type="button" class="quick-btn practice" data-action="Practice">
+            <div class="q-ico" aria-hidden="true">◎</div>
+            <span>Practice</span>
+          </button>
+          <button type="button" class="quick-btn translate" data-action="Translate">
+            <div class="q-ico" aria-hidden="true">⇄</div>
+            <span>Translate</span>
+          </button>
+          <button type="button" class="quick-btn dictionary" data-action="Dictionary">
+            <div class="q-ico" aria-hidden="true">⌕</div>
+            <span>Dictionary</span>
+          </button>
+        </div>
+
+        <!-- FR-006 Learning Paths -->
+        <div class="section-head">
+          <h2 class="section-title">Learning paths</h2>
+          <button type="button" class="section-link" id="seeAll">See all</button>
+        </div>
+
+        <div class="skeleton-list" id="skeletonList" aria-hidden="true">
+          <div class="skel-card"></div>
+          <div class="skel-card"></div>
+          <div class="skel-card"></div>
+        </div>
+
+        <div class="state-box" id="stateEmpty">
+          <div class="art" aria-hidden="true">📭</div>
+          <h3>Learning paths coming soon!</h3>
+          <p>No learning paths available yet. Check back after content is published.</p>
+        </div>
+
+        <div class="state-box error" id="stateError">
+          <div class="art" aria-hidden="true">⚠️</div>
+          <h3>Unable to load learning paths</h3>
+          <p>Connection timed out. Check your network and try again.</p>
+          <button type="button" class="btn-retry" id="retryBtn">Retry</button>
+        </div>
+
+        <div id="pathList" role="list"></div>
+      </div>
+
+      <nav class="tab-bar" aria-label="Main navigation">
+        <button type="button" class="tab active" data-tab="Home"><span class="ico">⌂</span>Learn</button>
+        <button type="button" class="tab" data-tab="Practice"><span class="ico">◎</span>Practice</button>
+        <button type="button" class="tab" data-tab="Translate"><span class="ico">⇄</span>Translate</button>
+        <button type="button" class="tab" data-tab="Dictionary"><span class="ico">⌕</span>Dictionary</button>
+        <button type="button" class="tab" data-tab="Profile"><span class="ico">☺</span>Profile</button>
+      </nav>
+    </div>
+  </div>
+
+  <p class="spec-note">
+    Unlock rules: <code>none</code> · <code>path_complete</code> · <code>xp_threshold</code><br />
+    Level = XP tier (every 100 XP ≈ 1 level). Streak = consecutive days with ≥1 lesson.
+  </p>
+
+  <script>
+    /** @typedef {{ id: string; title: string; lessons: number; minutes: number; progress: number; locked: boolean; icon: string; unlockHint: string; unlockType: "none" | "path_complete" | "xp_threshold" }} LearningPath */
+
+    const USER = {
+      displayName: "Sarah Chen",
+      email: "sarah@example.com",
+      xp: 1247,
+      streak: 12,
+      completedLessons: 15,
+      totalLessons: 28,
+      completedPaths: 1,
+      totalPaths: 3,
+    };
+
+    /** @type {LearningPath[]} */
+    const PATHS = [
+      {
+        id: "path-basics",
+        title: "ASL Basics",
+        lessons: 8,
+        minutes: 60,
+        progress: 80,
+        locked: false,
+        icon: "👋",
+        unlockHint: "",
+        unlockType: "none",
+      },
+      {
+        id: "path-everyday",
+        title: "Everyday Communication",
+        lessons: 8,
+        minutes: 70,
+        progress: 20,
+        locked: false,
+        icon: "💬",
+        unlockHint: "",
+        unlockType: "path_complete",
+      },
+      {
+        id: "path-advanced",
+        title: "Advanced Conversations",
+        lessons: 8,
+        minutes: 80,
+        progress: 0,
+        locked: true,
+        icon: "🗣️",
+        unlockHint: "Complete Everyday Communication to unlock",
+        unlockType: "path_complete",
+      },
+      {
+        id: "path-emergency",
+        title: "Emergency Phrases",
+        lessons: 4,
+        minutes: 25,
+        progress: 0,
+        locked: true,
+        icon: "🆘",
+        unlockHint: "Requires 1,500 XP to unlock",
+        unlockType: "xp_threshold",
+      },
+    ];
+
+    function getLevel(xp) {
+      if (xp >= 1000) return { level: 5 + Math.floor((xp - 1000) / 500), tier: "Gold", css: "" };
+      if (xp >= 500) return { level: 4, tier: "Silver", css: "silver" };
+      if (xp >= 250) return { level: 3, tier: "Bronze", css: "bronze" };
+      if (xp >= 100) return { level: 2, tier: "White", css: "gray" };
+      return { level: 1, tier: "Starter", css: "gray" };
+    }
+
+    function showToast(msg, type) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show" + (type ? " " + type : "");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove("show"), 2600);
+    }
+
+    function ctaLabel(path) {
+      if (path.locked) return path.unlockHint;
+      if (path.progress <= 0) return "Start";
+      if (path.progress >= 100) return "Review";
+      return "Continue Learning";
+    }
+
+    function renderPaths(paths) {
+      const list = document.getElementById("pathList");
+      list.innerHTML = paths.map((p) => {
+        const cta = ctaLabel(p);
+        const pct = p.locked ? 0 : p.progress;
+        return `
+          <button type="button" class="path-card ${p.locked ? "locked" : ""}" role="listitem"
+            data-id="${p.id}" data-locked="${p.locked}" data-hint="${p.unlockHint.replace(/"/g, "&quot;")}">
+            <div class="path-icon" aria-hidden="true">
+              ${p.locked ? "🔒" : p.icon}
+              ${p.locked ? '<span class="lock-chip">🔒</span>' : ""}
+            </div>
+            <div>
+              <div class="path-title">${p.title}</div>
+              <div class="path-meta">${p.lessons} lessons · ${p.minutes} min</div>
+              ${!p.locked ? `
+                <div class="path-track"><div class="path-fill" style="width:${pct}%"></div></div>
+                <div class="path-cta">
+                  ${cta}
+                  ${pct > 0 && pct < 100 ? `<span class="pill">${pct}%</span>` : ""}
+                </div>
+              ` : `
+                <div class="path-cta">${cta}</div>
+              `}
+            </div>
+          </button>
+        `;
+      }).join("");
+
+      list.querySelectorAll(".path-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          if (card.dataset.locked === "true") {
+            showToast(card.dataset.hint || "Complete available paths to unlock more", "unlock");
+            return;
+          }
+          showToast("Opening “" + card.querySelector(".path-title").textContent + "”…", "ok");
+        });
+      });
+    }
+
+    function renderUser(user) {
+      const first = user.displayName.split(" ")[0];
+      const lvl = getLevel(user.xp);
+      const overall = Math.round((user.completedLessons / user.totalLessons) * 100);
+
+      document.getElementById("homeHi").textContent = "Hi, " + first;
+      document.getElementById("avatarBtn").textContent = first.charAt(0).toUpperCase();
+      document.getElementById("userName").textContent = user.displayName;
+      document.getElementById("levelBadge").textContent = String(lvl.level);
+      document.getElementById("levelBadge").className = "level-badge " + lvl.css;
+      document.getElementById("levelLabel").textContent = "Level " + lvl.level + " · " + lvl.tier;
+      document.getElementById("statStreak").textContent = user.streak + " days";
+      document.getElementById("statXp").textContent = user.xp.toLocaleString("en-US");
+      document.getElementById("statLessons").textContent = user.completedLessons + "/" + user.totalLessons;
+      document.getElementById("statPaths").textContent = user.completedPaths + "/" + user.totalPaths;
+      document.getElementById("overallPct").textContent = overall + "%";
+      document.getElementById("overallFill").style.width = overall + "%";
+      document.getElementById("overallBar").setAttribute("aria-valuenow", String(overall));
+    }
+
+    function setViewState(state) {
+      const skeleton = document.getElementById("skeletonList");
+      const empty = document.getElementById("stateEmpty");
+      const error = document.getElementById("stateError");
+      const list = document.getElementById("pathList");
+
+      skeleton.classList.toggle("show", state === "loading");
+      empty.classList.toggle("show", state === "empty");
+      error.classList.toggle("show", state === "error");
+      list.style.display = state === "ready" ? "block" : "none";
+
+      if (state === "ready") renderPaths(PATHS);
+      if (state === "empty") list.innerHTML = "";
+    }
+
+    // Toolbar state previews
+    document.querySelectorAll(".toolbar button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".toolbar button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        setViewState(btn.dataset.state);
+      });
+    });
+
+    document.getElementById("retryBtn").addEventListener("click", () => {
+      setViewState("loading");
+      document.querySelectorAll(".toolbar button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.state === "loading");
+      });
+      setTimeout(() => {
+        setViewState("ready");
+        document.querySelectorAll(".toolbar button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.state === "ready");
+        });
+        showToast("Learning paths loaded", "ok");
+      }, 900);
+    });
+
+    document.querySelectorAll(".quick-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        showToast("Navigate to " + btn.dataset.action, "ok");
+      });
+    });
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        if (tab.dataset.tab !== "Home") {
+          showToast(tab.dataset.tab + " — coming in next milestone", "ok");
+        }
+      });
+    });
+
+    document.getElementById("avatarBtn").addEventListener("click", () => {
+      showToast("Open Profile · " + USER.email, "ok");
+    });
+
+    document.getElementById("seeAll").addEventListener("click", () => {
+      showToast("Full learning path catalog", "ok");
+    });
+
+    // Init
+    renderUser(USER);
+    setViewState("ready");
+  </script>
+</body>
+</html>
