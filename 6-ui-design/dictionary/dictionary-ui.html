@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SignBridge — Dictionary UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --primary-pressed: #357ABD;
+      --primary-soft: #E8F1FA;
+      --success: #27AE60;
+      --success-soft: #E8F8EF;
+      --warning: #F39C12;
+      --warning-soft: #FEF5E7;
+      --error: #E74C3C;
+      --error-soft: #FDECEA;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --text: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --border: #D5DBE1;
+      --radius: 14px;
+      --touch: 48px;
+      --font-display: "Outfit", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, #cfe3f7 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 10%, #d9e8f6 0%, transparent 50%),
+        linear-gradient(165deg, #eef4fa 0%, var(--bg) 45%, #eef2f6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 48px;
+      gap: 20px;
+    }
+
+    .page-header { text-align: center; max-width: 640px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+    }
+    .page-header p {
+      margin-top: 6px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 780px;
+    }
+    .toolbar button {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+    .toolbar button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .phone {
+      width: 390px;
+      height: 844px;
+      border-radius: 40px;
+      background: #1a1f26;
+      padding: 12px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 24px 64px rgba(44, 62, 80, 0.22);
+      flex-shrink: 0;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #1a1f26;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 54px;
+      padding: 18px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    .dict-header {
+      padding: 4px 18px 10px;
+      flex-shrink: 0;
+    }
+    .dict-header h1 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.45rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .search-wrap {
+      position: relative;
+    }
+    .search-ico {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      min-height: var(--touch);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      padding: 0 44px 0 42px;
+      font-family: var(--font-body);
+      font-size: 0.98rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.18);
+    }
+    .search-input::placeholder { color: #A0AAB2; }
+    .clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: #EEF2F5;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: none;
+      place-items: center;
+    }
+    .clear-btn.show { display: grid; }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 12px 18px 0;
+      padding: 4px;
+      background: #E8ECF0;
+      border-radius: 12px;
+      flex-shrink: 0;
+    }
+    .mode-tab {
+      min-height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .mode-tab.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    }
+
+    .dict-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px 96px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .result-meta {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .result-meta strong { color: var(--text); }
+
+    /* Category chips (horizontal) */
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .chip-row::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .chip.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Category grid (US-031) */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .cat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 14px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+      min-height: 108px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cat-card:active { transform: scale(0.97); }
+    .cat-card:hover {
+      border-color: #b8d4f0;
+      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.1);
+    }
+    .cat-ico {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+      background: var(--primary-soft);
+    }
+    .cat-card:nth-child(2) .cat-ico { background: var(--warning-soft); }
+    .cat-card:nth-child(3) .cat-ico { background: var(--success-soft); }
+    .cat-card:nth-child(4) .cat-ico { background: #F0E8FA; }
+    .cat-card:nth-child(5) .cat-ico { background: #E8F6F8; }
+    .cat-card:nth-child(6) .cat-ico { background: var(--error-soft); }
+    .cat-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
+    }
+    .cat-count {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Gesture result cards */
+    .result-list { display: flex; flex-direction: column; gap: 10px; }
+    .gesture-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 72px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+    }
+    .gesture-card:hover {
+      border-color: #b8d4f0;
+      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.1);
+    }
+    .gesture-card:active { transform: scale(0.985); }
+    .thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 40% 40%, rgba(74,144,226,0.35), transparent 60%),
+        linear-gradient(145deg, #2a3548, #1a2330);
+      display: grid;
+      place-items: center;
+      font-size: 1.8rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .thumb .play-dot {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.92);
+      color: var(--primary);
+      font-size: 0.6rem;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+    .g-word {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.02rem;
+      letter-spacing: -0.02em;
+    }
+    .g-cat {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+    }
+    .g-arrow {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      padding-right: 4px;
+    }
+
+    /* States */
+    .state-box {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 36px 20px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+    }
+    .state-box.show { display: flex; }
+    .state-box .art {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      margin-bottom: 14px;
+      background: var(--primary-soft);
+    }
+    .state-box.error .art { background: var(--error-soft); }
+    .state-box h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .state-box p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      max-width: 260px;
+    }
+    .suggest-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+    .suggest-row button {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 99px;
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--primary);
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+
+    .skeleton-list { display: none; flex-direction: column; gap: 10px; }
+    .skeleton-list.show { display: flex; }
+    .skel-card {
+      height: 96px;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #E8ECF0 25%, #F4F6F8 50%, #E8ECF0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Detail bottom sheet */
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 35, 0.45);
+      z-index: 30;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .sheet-backdrop.show { display: block; opacity: 1; }
+
+    .detail-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 35;
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      padding: 10px 18px 28px;
+      transform: translateY(110%);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      max-height: 78%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -12px 40px rgba(0,0,0,0.18);
+    }
+    .detail-sheet.open { transform: translateY(0); }
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 99px;
+      background: #D5DBE1;
+      margin: 4px auto 14px;
+    }
+    .detail-video {
+      aspect-ratio: 16 / 10;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 35% 40%, rgba(74,144,226,0.4), transparent 55%),
+        linear-gradient(160deg, #243044, #1a2330);
+      display: grid;
+      place-items: center;
+      font-size: 3.4rem;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-video .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 99px;
+    }
+    .detail-play {
+      position: absolute;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(74,144,226,0.45);
+    }
+    .detail-word {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .detail-desc {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .btn {
+      flex: 1;
+      min-height: var(--touch);
+      border-radius: 14px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-ghost {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.35);
+    }
+    .btn:active { transform: scale(0.97); }
+
+    /* Tab bar */
+    .tab-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 78px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px 4px 18px;
+      z-index: 5;
+    }
+    .tab {
+      border: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      min-height: 48px;
+      justify-content: center;
+    }
+    .tab.active { color: var(--primary); }
+    .tab .ico {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+    .tab.active .ico { background: var(--primary-soft); }
+
+    .toast {
+      position: absolute;
+      top: 58px;
+      left: 18px;
+      right: 18px;
+      z-index: 50;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #2C3E50;
+      color: #fff;
+      font-size: 0.86rem;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    }
+    .toast.show { display: block; animation: fadeIn 0.25s ease; }
+    .toast.ok { background: #1e8449; }
+    .toast.warn { background: var(--warning); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .panel { display: none; }
+    .panel.show { display: block; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skel-card { animation: none; }
+      .detail-sheet { transition: none; }
+    }
+
+    .spec-note {
+      max-width: 390px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .spec-note code {
+      font-family: ui-monospace, Consolas, monospace;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>SignBridge · Dictionary Screen</h1>
+    <p>Prototype theo <strong>FR-005</strong> / <strong>US-030–031</strong> — Search, category browse, detail sheet với video demo.</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="Preview states">
+    <button type="button" class="active" data-state="browse">Browse</button>
+    <button type="button" data-state="search">Search results</button>
+    <button type="button" data-state="empty">No results</button>
+    <button type="button" data-state="loading">Loading</button>
+    <button type="button" data-state="detail">Detail sheet</button>
+  </div>
+
+  <div class="phone" aria-label="SignBridge Dictionary prototype">
+    <div class="phone-screen">
+      <div class="notch" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● ◾</span>
+      </div>
+
+      <div class="dict-header">
+        <h1>Dictionary</h1>
+        <div class="search-wrap">
+          <span class="search-ico" aria-hidden="true">⌕</span>
+          <input
+            type="search"
+            class="search-input"
+            id="searchInput"
+            placeholder="Search gestures..."
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          <button type="button" class="clear-btn" id="clearBtn" aria-label="Clear search">×</button>
+        </div>
+      </div>
+
+      <div class="mode-tabs" role="tablist">
+        <button type="button" class="mode-tab active" data-mode="search" role="tab">Search</button>
+        <button type="button" class="mode-tab" data-mode="categories" role="tab">Categories</button>
+      </div>
+
+      <div class="dict-scroll">
+        <div class="skeleton-list" id="skeletonList">
+          <div class="skel-card"></div>
+          <div class="skel-card"></div>
+          <div class="skel-card"></div>
+        </div>
+
+        <div class="state-box" id="stateEmpty">
+          <div class="art" aria-hidden="true">🔍</div>
+          <h3 id="emptyTitle">No results found</h3>
+          <p id="emptyMsg">No results for “xyz”. Try a different spelling or browse categories.</p>
+          <div class="suggest-row" id="suggestRow">
+            <button type="button" data-q="hello">hello</button>
+            <button type="button" data-q="thank you">thank you</button>
+            <button type="button" data-q="family">family</button>
+          </div>
+        </div>
+
+        <!-- Search / browse results -->
+        <div class="panel show" id="panelResults">
+          <div class="section-label" id="chipLabel">Popular categories</div>
+          <div class="chip-row" id="chipRow" aria-label="Filter by category"></div>
+          <div class="result-meta" id="resultMeta">Showing <strong>8</strong> gestures</div>
+          <div class="result-list" id="resultList" role="list"></div>
+        </div>
+
+        <!-- Category grid -->
+        <div class="panel" id="panelCategories">
+          <div class="section-label">Browse by topic</div>
+          <div class="cat-grid" id="catGrid"></div>
+        </div>
+      </div>
+
+      <div class="sheet-backdrop" id="sheetBackdrop"></div>
+      <div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-labelledby="detailWord">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="detail-video">
+          <span class="badge" id="detailBadge">Greetings</span>
+          <span id="detailEmoji" aria-hidden="true">👋</span>
+          <button type="button" class="detail-play" id="detailPlay" aria-label="Play demo">▶</button>
+        </div>
+        <div class="detail-word" id="detailWord">Hello</div>
+        <p class="detail-desc" id="detailDesc">
+          Raise your dominant hand near the forehead and wave outward in a friendly arc.
+        </p>
+        <div class="detail-actions">
+          <button type="button" class="btn btn-ghost" id="closeSheet">Close</button>
+          <button type="button" class="btn btn-primary" id="practiceBtn">Practice this</button>
+        </div>
+      </div>
+
+      <nav class="tab-bar" aria-label="Main navigation">
+        <button type="button" class="tab" data-tab="Learn"><span class="ico">⌂</span>Learn</button>
+        <button type="button" class="tab" data-tab="Practice"><span class="ico">◎</span>Practice</button>
+        <button type="button" class="tab" data-tab="Translate"><span class="ico">⇄</span>Translate</button>
+        <button type="button" class="tab active" data-tab="Dictionary"><span class="ico">⌕</span>Dictionary</button>
+        <button type="button" class="tab" data-tab="Profile"><span class="ico">☺</span>Profile</button>
+      </nav>
+    </div>
+  </div>
+
+  <p class="spec-note">
+    Search: debounce <code>300ms</code> · exact → prefix → contains → fuzzy (≤1)<br />
+    Cards: thumbnail · word · category · Detail sheet: video + description + Practice CTA
+  </p>
+
+  <script>
+    /** @typedef {{ id: string; word: string; category: string; emoji: string; desc: string }} Gesture */
+
+    /** @type {Gesture[]} */
+    const GESTURES = [
+      { id: "g1", word: "Hello", category: "Greetings", emoji: "👋", desc: "Raise your dominant hand near the forehead and wave outward in a friendly arc." },
+      { id: "g2", word: "Thank You", category: "Greetings", emoji: "🙏", desc: "Touch fingertips to the chin, then move the hand forward toward the person." },
+      { id: "g3", word: "Please", category: "Greetings", emoji: "🤲", desc: "Flat hand circles on the chest in a small clockwise motion." },
+      { id: "g4", word: "Yes", category: "Basics", emoji: "👍", desc: "Fist nods up and down like a head nodding yes." },
+      { id: "g5", word: "No", category: "Basics", emoji: "👎", desc: "Index and middle finger tap the thumb closed, like a mouth saying no." },
+      { id: "g6", word: "Family", category: "Family", emoji: "👨‍👩‍👧", desc: "Both F-handshapes circle outward from the chest, then join." },
+      { id: "g7", word: "Happy", category: "Emotions", emoji: "😊", desc: "Both flat hands brush upward on the chest twice." },
+      { id: "g8", word: "Eat", category: "Verbs", emoji: "🍽️", desc: "Flat-O hand taps near the mouth a few times." },
+      { id: "g9", word: "Drink", category: "Verbs", emoji: "🥤", desc: "C-handshape tips toward the mouth like holding a cup." },
+      { id: "g10", word: "Mom", category: "Family", emoji: "👩", desc: "Thumb of open 5-hand touches the chin." },
+      { id: "g11", word: "One", category: "Numbers", emoji: "1️⃣", desc: "Index finger up, other fingers closed." },
+      { id: "g12", word: "Help", category: "Verbs", emoji: "🆘", desc: "Fist on flat palm, then lift both hands upward together." },
+    ];
+
+    const CATEGORIES = [
+      { id: "Greetings", icon: "👋", label: "Greetings" },
+      { id: "Numbers", icon: "🔢", label: "Numbers" },
+      { id: "Family", icon: "👨‍👩‍👧", label: "Family" },
+      { id: "Emotions", icon: "😊", label: "Emotions" },
+      { id: "Verbs", icon: "🏃", label: "Verbs" },
+      { id: "Basics", icon: "⭐", label: "Basics" },
+    ];
+
+    let activeCategory = "All";
+    let currentMode = "search";
+    let debounceTimer = null;
+
+    function showToast(msg, type) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show" + (type ? " " + type : "");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = a[i - 1] === b[j - 1]
+            ? dp[i - 1][j - 1]
+            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+      }
+      return dp[m][n];
+    }
+
+    /** @param {string} query */
+    function searchGestures(query) {
+      const q = query.trim().toLowerCase();
+      let list = GESTURES.slice();
+
+      if (activeCategory !== "All") {
+        list = list.filter((g) => g.category === activeCategory);
+      }
+
+      if (!q) return list;
+
+      const scored = list.map((g) => {
+        const w = g.word.toLowerCase();
+        let score = 99;
+        if (w === q) score = 0;
+        else if (w.startsWith(q)) score = 1;
+        else if (w.includes(q)) score = 2;
+        else if (levenshtein(w, q) <= 1) score = 3;
+        else score = 99;
+        return { g, score };
+      }).filter((x) => x.score < 99);
+
+      scored.sort((a, b) => a.score - b.score || a.g.word.localeCompare(b.g.word));
+      return scored.map((x) => x.g);
+    }
+
+    function renderChips() {
+      const row = document.getElementById("chipRow");
+      const chips = ["All", ...CATEGORIES.map((c) => c.id)];
+      row.innerHTML = chips.map((c) => `
+        <button type="button" class="chip ${c === activeCategory ? "active" : ""}" data-cat="${c}">
+          ${c === "All" ? "All" : c}
+        </button>
+      `).join("");
+
+      row.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          activeCategory = chip.dataset.cat;
+          renderChips();
+          runSearch(document.getElementById("searchInput").value);
+        });
+      });
+    }
+
+    function renderCategories() {
+      const grid = document.getElementById("catGrid");
+      grid.innerHTML = CATEGORIES.map((c) => {
+        const count = GESTURES.filter((g) => g.category === c.id).length;
+        return `
+          <button type="button" class="cat-card" data-cat="${c.id}">
+            <div class="cat-ico" aria-hidden="true">${c.icon}</div>
+            <div class="cat-name">${c.label}</div>
+            <div class="cat-count">${count} gestures</div>
+          </button>
+        `;
+      }).join("");
+
+      grid.querySelectorAll(".cat-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          activeCategory = card.dataset.cat;
+          setMode("search");
+          document.getElementById("searchInput").value = "";
+          document.getElementById("clearBtn").classList.remove("show");
+          renderChips();
+          runSearch("");
+          showToast("Browsing " + activeCategory, "ok");
+        });
+      });
+    }
+
+    /** @param {Gesture[]} list */
+    function renderResults(list) {
+      const meta = document.getElementById("resultMeta");
+      const box = document.getElementById("resultList");
+      meta.innerHTML = list.length
+        ? `Showing <strong>${list.length}</strong> gesture${list.length === 1 ? "" : "s"}`
+        : "";
+      box.innerHTML = list.map((g) => `
+        <button type="button" class="gesture-card" role="listitem" data-id="${g.id}">
+          <div class="thumb" aria-hidden="true">
+            ${g.emoji}
+            <span class="play-dot">▶</span>
+          </div>
+          <div>
+            <div class="g-word">${g.word}</div>
+            <span class="g-cat">${g.category}</span>
+          </div>
+          <span class="g-arrow" aria-hidden="true">›</span>
+        </button>
+      `).join("");
+
+      box.querySelectorAll(".gesture-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          const g = GESTURES.find((x) => x.id === card.dataset.id);
+          if (g) openDetail(g);
+        });
+      });
+    }
+
+    function runSearch(query) {
+      const list = searchGestures(query);
+      const empty = document.getElementById("stateEmpty");
+      const panel = document.getElementById("panelResults");
+      const skel = document.getElementById("skeletonList");
+
+      skel.classList.remove("show");
+      document.getElementById("panelCategories").classList.remove("show");
+
+      if (!list.length && query.trim()) {
+        empty.classList.add("show");
+        panel.classList.remove("show");
+        document.getElementById("emptyTitle").textContent = "No results found";
+        document.getElementById("emptyMsg").textContent =
+          `No results for “${query.trim()}”. Try a different spelling or browse categories.`;
+        return;
+      }
+
+      empty.classList.remove("show");
+      panel.classList.add("show");
+      renderResults(list);
+    }
+
+    /** @param {Gesture} g */
+    function openDetail(g) {
+      document.getElementById("detailWord").textContent = g.word;
+      document.getElementById("detailDesc").textContent = g.desc;
+      document.getElementById("detailBadge").textContent = g.category;
+      document.getElementById("detailEmoji").textContent = g.emoji;
+      document.getElementById("sheetBackdrop").classList.add("show");
+      document.getElementById("detailSheet").classList.add("open");
+    }
+
+    function closeDetail() {
+      document.getElementById("sheetBackdrop").classList.remove("show");
+      document.getElementById("detailSheet").classList.remove("open");
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll(".mode-tab").forEach((t) => {
+        t.classList.toggle("active", t.dataset.mode === mode);
+      });
+
+      const results = document.getElementById("panelResults");
+      const cats = document.getElementById("panelCategories");
+      const empty = document.getElementById("stateEmpty");
+      const skel = document.getElementById("skeletonList");
+      skel.classList.remove("show");
+      empty.classList.remove("show");
+
+      if (mode === "categories") {
+        results.classList.remove("show");
+        cats.classList.add("show");
+      } else {
+        cats.classList.remove("show");
+        results.classList.add("show");
+        runSearch(document.getElementById("searchInput").value);
+      }
+    }
+
+    function setViewState(state) {
+      closeDetail();
+      const skel = document.getElementById("skeletonList");
+      const empty = document.getElementById("stateEmpty");
+      const results = document.getElementById("panelResults");
+      const cats = document.getElementById("panelCategories");
+      const input = document.getElementById("searchInput");
+
+      skel.classList.remove("show");
+      empty.classList.remove("show");
+      results.classList.remove("show");
+      cats.classList.remove("show");
+
+      if (state === "browse") {
+        setMode("categories");
+        input.value = "";
+        document.getElementById("clearBtn").classList.remove("show");
+        document.querySelectorAll(".mode-tab").forEach((t) => {
+          t.classList.toggle("active", t.dataset.mode === "categories");
+        });
+      }
+      if (state === "search") {
+        setMode("search");
+        activeCategory = "All";
+        renderChips();
+        input.value = "hel";
+        document.getElementById("clearBtn").classList.add("show");
+        runSearch("hel");
+      }
+      if (state === "empty") {
+        setMode("search");
+        input.value = "xyz";
+        document.getElementById("clearBtn").classList.add("show");
+        runSearch("xyz");
+      }
+      if (state === "loading") {
+        setMode("search");
+        results.classList.remove("show");
+        cats.classList.remove("show");
+        empty.classList.remove("show");
+        skel.classList.add("show");
+      }
+      if (state === "detail") {
+        setMode("search");
+        activeCategory = "All";
+        renderChips();
+        input.value = "";
+        document.getElementById("clearBtn").classList.remove("show");
+        runSearch("");
+        openDetail(GESTURES[0]);
+      }
+    }
+
+    // Events
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      const val = e.target.value;
+      document.getElementById("clearBtn").classList.toggle("show", val.length > 0);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (currentMode !== "search") setMode("search");
+        runSearch(val);
+      }, 300);
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      const input = document.getElementById("searchInput");
+      input.value = "";
+      document.getElementById("clearBtn").classList.remove("show");
+      runSearch("");
+      input.focus();
+    });
+
+    document.querySelectorAll(".mode-tab").forEach((tab) => {
+      tab.addEventListener("click", () => setMode(tab.dataset.mode));
+    });
+
+    document.getElementById("sheetBackdrop").addEventListener("click", closeDetail);
+    document.getElementById("closeSheet").addEventListener("click", closeDetail);
+
+    document.getElementById("detailPlay").addEventListener("click", () => {
+      showToast("Playing ASL demo video…", "ok");
+    });
+
+    document.getElementById("practiceBtn").addEventListener("click", () => {
+      closeDetail();
+      showToast("Opening Practice Room for this gesture", "ok");
+    });
+
+    document.getElementById("suggestRow").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-q]");
+      if (!btn) return;
+      const input = document.getElementById("searchInput");
+      input.value = btn.dataset.q;
+      document.getElementById("clearBtn").classList.add("show");
+      activeCategory = "All";
+      renderChips();
+      runSearch(btn.dataset.q);
+    });
+
+    document.querySelectorAll(".toolbar button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".toolbar button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        setViewState(btn.dataset.state);
+      });
+    });
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        if (tab.dataset.tab !== "Dictionary") {
+          showToast(tab.dataset.tab + " — navigate away", "ok");
+        }
+      });
+    });
+
+    renderChips();
+    renderCategories();
+    setViewState("browse");
+  </script>
+</body>
+</html>

@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SignBridge — Lesson UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --primary-pressed: #357ABD;
+      --primary-soft: #E8F1FA;
+      --success: #27AE60;
+      --success-soft: #E8F8EF;
+      --warning: #F39C12;
+      --warning-soft: #FEF5E7;
+      --error: #E74C3C;
+      --error-soft: #FDECEA;
+      --bg: #F8F9FA;
+      --surface: #FFFFFF;
+      --text: #2C3E50;
+      --text-secondary: #7F8C8D;
+      --border: #D5DBE1;
+      --radius: 14px;
+      --touch: 48px;
+      --font-display: "Outfit", system-ui, sans-serif;
+      --font-body: "Source Sans 3", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--font-body);
+      color: var(--text);
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, #cfe3f7 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 10%, #d9e8f6 0%, transparent 50%),
+        linear-gradient(165deg, #eef4fa 0%, var(--bg) 45%, #eef2f6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 48px;
+      gap: 20px;
+    }
+
+    .page-header { text-align: center; max-width: 640px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+    }
+    .page-header p {
+      margin-top: 6px;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 780px;
+    }
+    .toolbar button {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+    .toolbar button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .phone {
+      width: 390px;
+      height: 844px;
+      border-radius: 40px;
+      background: #1a1f26;
+      padding: 12px;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 24px 64px rgba(44, 62, 80, 0.22);
+      flex-shrink: 0;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 28px;
+      background: #1a1f26;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 54px;
+      padding: 18px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+    }
+
+    /* —— Nav header —— */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 14px 10px;
+      flex-shrink: 0;
+    }
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .back-btn:active { transform: scale(0.95); }
+    .nav-meta { flex: 1; min-width: 0; }
+    .nav-path {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .nav-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .xp-chip {
+      background: var(--warning-soft);
+      color: #B9770E;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+
+    .lesson-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 18px 110px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* —— Progress strip —— */
+    .lesson-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .lesson-progress .track {
+      flex: 1;
+      height: 8px;
+      background: #E8ECF0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .lesson-progress .fill {
+      height: 100%;
+      width: 37.5%;
+      background: linear-gradient(90deg, var(--primary), #6bb0f0);
+      border-radius: 99px;
+      transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .lesson-progress .step {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* —— Video player —— */
+    .video-card {
+      background: #1a2330;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 16 / 10;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 28px rgba(26, 35, 48, 0.28);
+    }
+    .video-stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(74,144,226,0.35), transparent 55%),
+        radial-gradient(circle at 70% 60%, rgba(39,174,96,0.2), transparent 50%),
+        linear-gradient(160deg, #243044 0%, #1a2330 100%);
+    }
+    .hand-demo {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: grid;
+      place-items: center;
+      font-size: 3.2rem;
+      backdrop-filter: blur(6px);
+      transition: transform 0.35s ease;
+    }
+    .video-card.playing .hand-demo {
+      animation: waveHand 1.4s ease-in-out infinite;
+    }
+    @keyframes waveHand {
+      0%, 100% { transform: rotate(-8deg) scale(1); }
+      50% { transform: rotate(12deg) scale(1.05); }
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.02em;
+    }
+    .slowmo-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      min-height: 36px;
+      padding: 0 12px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+    .slowmo-btn.on { background: var(--primary); }
+
+    .video-controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 28px 14px 12px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.72));
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .seek-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .seek-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 99px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .seek-fill {
+      height: 100%;
+      width: 28%;
+      background: #fff;
+      border-radius: 99px;
+      transition: width 0.2s linear;
+    }
+    .time-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      min-width: 72px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+    }
+    .ctrl-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .ctrl-btn.play {
+      width: 52px;
+      height: 52px;
+      background: var(--primary);
+      font-size: 1.2rem;
+      box-shadow: 0 4px 16px rgba(74,144,226,0.45);
+    }
+    .ctrl-btn:active { transform: scale(0.94); }
+
+    /* Error / loading overlays */
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(26, 35, 48, 0.92);
+      color: #fff;
+      text-align: center;
+      padding: 24px;
+      z-index: 3;
+    }
+    .video-overlay.show { display: flex; }
+    .video-overlay .art {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      display: grid;
+      place-items: center;
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+    .video-overlay h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .video-overlay p {
+      font-size: 0.84rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.4;
+      max-width: 240px;
+    }
+    .video-overlay .retry {
+      margin-top: 8px;
+      min-height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .skel-video {
+      position: absolute;
+      inset: 0;
+      display: none;
+      background: linear-gradient(90deg, #2a3548 25%, #354258 50%, #2a3548 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s ease-in-out infinite;
+      z-index: 2;
+    }
+    .skel-video.show { display: block; }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* —— Gesture info —— */
+    .gesture-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 16px rgba(44, 62, 80, 0.04);
+    }
+    .gesture-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .gesture-word {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .gesture-desc {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 99px;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+    }
+    .tag.green { background: var(--success-soft); color: #1e8449; }
+    .tag.amber { background: var(--warning-soft); color: #B9770E; }
+
+    /* Tips */
+    .tips {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .tips h3 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+    .tips li {
+      list-style: none;
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      padding: 6px 0 6px 22px;
+      position: relative;
+    }
+    .tips li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    /* Offline banner */
+    .offline-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--warning-soft);
+      border: 1px solid #F5D28A;
+      color: #9A7B0A;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .offline-banner.show { display: flex; }
+
+    /* Bottom CTA bar */
+    .cta-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 18px 22px;
+      background: linear-gradient(transparent, var(--bg) 28%, var(--bg));
+      display: flex;
+      gap: 10px;
+      z-index: 5;
+    }
+    .btn {
+      flex: 1;
+      min-height: var(--touch);
+      border-radius: 14px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.12s, background 0.12s, opacity 0.12s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-ghost {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      flex: 0.7;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(74, 144, 226, 0.35);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(39, 174, 96, 0.35);
+    }
+
+    /* Completion overlay */
+    .complete-sheet {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 35, 0.55);
+      backdrop-filter: blur(6px);
+      padding: 24px;
+    }
+    .complete-sheet.show { display: flex; animation: fadeIn 0.25s ease; }
+    .complete-card {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 28px 22px 22px;
+      text-align: center;
+      box-shadow: 0 20px 48px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .confetti span {
+      position: absolute;
+      top: -8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      animation: fall 1.6s ease-in forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(320px) rotate(320deg); opacity: 0; }
+    }
+    .xp-burst {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 14px;
+      border-radius: 28px;
+      background: linear-gradient(145deg, #F7D060, #F39C12);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.35rem;
+      box-shadow: 0 10px 28px rgba(243, 156, 18, 0.4);
+      animation: popIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .complete-card h2 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .complete-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+    .complete-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .complete-actions .btn { width: 100%; }
+
+    .toast {
+      position: absolute;
+      top: 58px;
+      left: 18px;
+      right: 18px;
+      z-index: 50;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #2C3E50;
+      color: #fff;
+      font-size: 0.86rem;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    }
+    .toast.show { display: block; animation: fadeIn 0.25s ease; }
+    .toast.ok { background: #1e8449; }
+    .toast.warn { background: var(--warning); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skel-video, .video-card.playing .hand-demo, .xp-burst, .confetti span { animation: none; }
+      .seek-fill, .lesson-progress .fill { transition: none; }
+    }
+
+    .spec-note {
+      max-width: 390px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.45;
+    }
+    .spec-note code {
+      font-family: ui-monospace, Consolas, monospace;
+      background: var(--primary-soft);
+      color: var(--primary-pressed);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 0.76rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>SignBridge · Lesson Screen</h1>
+    <p>Prototype theo <strong>FR-004</strong> / <strong>US-011</strong> — Học bài qua video, Mark Completed, XP + mở khóa lesson tiếp theo.</p>
+  </header>
+
+  <div class="toolbar" role="toolbar" aria-label="Preview states">
+    <button type="button" class="active" data-state="ready">Ready</button>
+    <button type="button" data-state="loading">Loading</button>
+    <button type="button" data-state="playing">Playing</button>
+    <button type="button" data-state="error">Video error</button>
+    <button type="button" data-state="offline">Offline</button>
+    <button type="button" data-state="completed">Completed</button>
+  </div>
+
+  <div class="phone" aria-label="SignBridge Lesson prototype">
+    <div class="phone-screen">
+      <div class="notch" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●● ◾</span>
+      </div>
+
+      <div class="nav-bar">
+        <button type="button" class="back-btn" id="backBtn" aria-label="Back">←</button>
+        <div class="nav-meta">
+          <div class="nav-path">ASL Basics · Lesson 3/8</div>
+          <div class="nav-title">Hello</div>
+        </div>
+        <div class="xp-chip" id="xpChip">+10 XP</div>
+      </div>
+
+      <div class="lesson-scroll">
+        <div class="lesson-progress" aria-label="Path progress">
+          <div class="track"><div class="fill" id="pathFill"></div></div>
+          <span class="step" id="stepLabel">3 / 8</span>
+        </div>
+
+        <div class="offline-banner" id="offlineBanner" role="status">
+          ⚠ Connection lost — playback paused. Retry when online.
+        </div>
+
+        <div class="video-card" id="videoCard">
+          <div class="skel-video" id="skelVideo"></div>
+          <div class="video-stage">
+            <div class="hand-demo" aria-hidden="true">👋</div>
+          </div>
+          <span class="video-badge">ASL · Demo</span>
+          <button type="button" class="slowmo-btn" id="slowmoBtn">0.5×</button>
+          <div class="video-controls">
+            <div class="seek-row">
+              <div class="seek-track" id="seekTrack" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="28">
+                <div class="seek-fill" id="seekFill"></div>
+              </div>
+              <span class="time-label" id="timeLabel">0:08 / 0:28</span>
+            </div>
+            <div class="ctrl-row">
+              <button type="button" class="ctrl-btn" id="replayBtn" aria-label="Replay">↺</button>
+              <button type="button" class="ctrl-btn play" id="playBtn" aria-label="Play">▶</button>
+              <button type="button" class="ctrl-btn" id="skipBtn" aria-label="Skip ahead">⏭</button>
+            </div>
+          </div>
+          <div class="video-overlay" id="videoError">
+            <div class="art" aria-hidden="true">🎬</div>
+            <h3>Video unavailable</h3>
+            <p>Could not load the demo clip. You can still read the gesture tips below.</p>
+            <button type="button" class="retry" id="retryVideo">Retry</button>
+          </div>
+        </div>
+
+        <section class="gesture-card" aria-label="Gesture description">
+          <div class="gesture-label">Gesture</div>
+          <div class="gesture-word">Hello</div>
+          <p class="gesture-desc">
+            Raise your dominant hand near the side of your forehead, palm facing out,
+            then move it away in a small arc — like a friendly wave from the temple.
+          </p>
+          <div class="tag-row">
+            <span class="tag">Greetings</span>
+            <span class="tag green">Beginner</span>
+            <span class="tag amber">One-handed</span>
+          </div>
+        </section>
+
+        <section class="tips">
+          <h3>Form checklist</h3>
+          <ul>
+            <li>Keep fingers together, palm open toward viewer</li>
+            <li>Start near the forehead, not the chest</li>
+            <li>Finish with a clear outward wave</li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="cta-bar">
+        <button type="button" class="btn btn-ghost" id="skipLesson">Skip</button>
+        <button type="button" class="btn btn-primary" id="completeBtn">Mark as Completed</button>
+      </div>
+
+      <div class="complete-sheet" id="completeSheet" role="dialog" aria-labelledby="completeTitle">
+        <div class="complete-card">
+          <div class="confetti" id="confetti" aria-hidden="true"></div>
+          <div class="xp-burst">+10</div>
+          <h2 id="completeTitle">Lesson complete!</h2>
+          <p>Nice work on <strong>Hello</strong>. Next lesson unlocked: <strong>Thank You</strong>.</p>
+          <div class="complete-actions">
+            <button type="button" class="btn btn-success" id="nextLesson">Continue to Thank You</button>
+            <button type="button" class="btn btn-ghost" id="backToPath">Back to path</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="spec-note">
+    Controls: Play / Pause / Seek / Replay · XP via <code>lesson.xpReward</code><br />
+    Failure: video placeholder + text · Offline banner pauses playback · XP pending sync if write fails
+  </p>
+
+  <script>
+    const LESSON = {
+      word: "Hello",
+      xp: 10,
+      duration: 28,
+      pathStep: 3,
+      pathTotal: 8,
+    };
+
+    let playing = false;
+    let progress = 0.28;
+    let slowmo = false;
+    let tickTimer = null;
+
+    function showToast(msg, type) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show" + (type ? " " + type : "");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    function formatTime(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    }
+
+    function updateSeek() {
+      const fill = document.getElementById("seekFill");
+      const label = document.getElementById("timeLabel");
+      const track = document.getElementById("seekTrack");
+      fill.style.width = (progress * 100) + "%";
+      track.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+      label.textContent = formatTime(progress * LESSON.duration) + " / " + formatTime(LESSON.duration);
+    }
+
+    function setPlaying(on) {
+      playing = on;
+      const card = document.getElementById("videoCard");
+      const btn = document.getElementById("playBtn");
+      card.classList.toggle("playing", on);
+      btn.textContent = on ? "❚❚" : "▶";
+      btn.setAttribute("aria-label", on ? "Pause" : "Play");
+      clearInterval(tickTimer);
+      if (on) {
+        tickTimer = setInterval(() => {
+          const speed = slowmo ? 0.012 : 0.025;
+          progress = Math.min(1, progress + speed);
+          updateSeek();
+          if (progress >= 1) {
+            setPlaying(false);
+            showToast("Video finished — mark as completed when ready", "ok");
+          }
+        }, 200);
+      }
+    }
+
+    function spawnConfetti() {
+      const box = document.getElementById("confetti");
+      box.innerHTML = "";
+      const colors = ["#4A90E2", "#27AE60", "#F39C12", "#E74C3C", "#9B59B6"];
+      for (let i = 0; i < 28; i++) {
+        const s = document.createElement("span");
+        s.style.left = Math.random() * 100 + "%";
+        s.style.background = colors[i % colors.length];
+        s.style.animationDelay = (Math.random() * 0.5) + "s";
+        s.style.width = (6 + Math.random() * 6) + "px";
+        s.style.height = s.style.width;
+        box.appendChild(s);
+      }
+    }
+
+    function showComplete(show) {
+      const sheet = document.getElementById("completeSheet");
+      sheet.classList.toggle("show", show);
+      if (show) {
+        spawnConfetti();
+        document.getElementById("completeBtn").className = "btn btn-success";
+        document.getElementById("completeBtn").textContent = "Completed ✓";
+        document.getElementById("completeBtn").disabled = true;
+        document.getElementById("pathFill").style.width = "50%";
+        document.getElementById("stepLabel").textContent = "4 / 8";
+      }
+    }
+
+    function setViewState(state) {
+      const skel = document.getElementById("skelVideo");
+      const err = document.getElementById("videoError");
+      const offline = document.getElementById("offlineBanner");
+      const completeBtn = document.getElementById("completeBtn");
+
+      skel.classList.toggle("show", state === "loading");
+      err.classList.toggle("show", state === "error");
+      offline.classList.toggle("show", state === "offline");
+
+      if (state !== "completed") showComplete(false);
+      if (state !== "playing" && state !== "ready") setPlaying(false);
+
+      if (state === "ready") {
+        progress = 0.28;
+        updateSeek();
+        completeBtn.disabled = false;
+        completeBtn.className = "btn btn-primary";
+        completeBtn.textContent = "Mark as Completed";
+        document.getElementById("pathFill").style.width = "37.5%";
+        document.getElementById("stepLabel").textContent = "3 / 8";
+      }
+      if (state === "playing") {
+        progress = 0.35;
+        updateSeek();
+        setPlaying(true);
+      }
+      if (state === "offline") {
+        setPlaying(false);
+        showToast("Playback paused — no network", "warn");
+      }
+      if (state === "completed") {
+        progress = 1;
+        updateSeek();
+        setPlaying(false);
+        showComplete(true);
+      }
+      if (state === "error") {
+        showToast("Showing text fallback for Hello", "warn");
+      }
+    }
+
+    document.getElementById("playBtn").addEventListener("click", () => {
+      if (document.getElementById("videoError").classList.contains("show")) return;
+      setPlaying(!playing);
+    });
+
+    document.getElementById("replayBtn").addEventListener("click", () => {
+      progress = 0;
+      updateSeek();
+      setPlaying(true);
+      showToast("Replaying from start", "ok");
+    });
+
+    document.getElementById("skipBtn").addEventListener("click", () => {
+      progress = Math.min(1, progress + 0.15);
+      updateSeek();
+    });
+
+    document.getElementById("seekTrack").addEventListener("click", (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      progress = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      updateSeek();
+    });
+
+    document.getElementById("slowmoBtn").addEventListener("click", () => {
+      slowmo = !slowmo;
+      const btn = document.getElementById("slowmoBtn");
+      btn.classList.toggle("on", slowmo);
+      btn.textContent = slowmo ? "0.5× ON" : "0.5×";
+      showToast(slowmo ? "Slow motion enabled" : "Normal speed", "ok");
+    });
+
+    document.getElementById("completeBtn").addEventListener("click", () => {
+      if (document.getElementById("completeBtn").disabled) return;
+      document.querySelectorAll(".toolbar button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.state === "completed");
+      });
+      setViewState("completed");
+      showToast("+" + LESSON.xp + " XP awarded", "ok");
+    });
+
+    document.getElementById("skipLesson").addEventListener("click", () => {
+      showToast("Skipped — you can still mark as completed", "ok");
+      progress = 1;
+      updateSeek();
+      setPlaying(false);
+    });
+
+    document.getElementById("nextLesson").addEventListener("click", () => {
+      showComplete(false);
+      showToast("Opening lesson: Thank You", "ok");
+    });
+
+    document.getElementById("backToPath").addEventListener("click", () => {
+      showComplete(false);
+      showToast("Back to ASL Basics path", "ok");
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      showToast("Back to learning path", "ok");
+    });
+
+    document.getElementById("retryVideo").addEventListener("click", () => {
+      setViewState("loading");
+      document.querySelectorAll(".toolbar button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.state === "loading");
+      });
+      setTimeout(() => {
+        setViewState("ready");
+        document.querySelectorAll(".toolbar button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.state === "ready");
+        });
+        showToast("Video loaded", "ok");
+      }, 900);
+    });
+
+    document.querySelectorAll(".toolbar button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".toolbar button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        setViewState(btn.dataset.state);
+      });
+    });
+
+    updateSeek();
+    setViewState("ready");
+  </script>
+</body>
+</html>
