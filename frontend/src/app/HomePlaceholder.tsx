@@ -1,26 +1,50 @@
 import type { JSX } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { AuthBanner } from "../components/ui/AuthBanner";
+import { PrimaryButton } from "../components/ui/PrimaryButton";
+import { useAuthStore } from "../stores/useAuthStore";
+import { colors } from "../utils/theme";
 
 const TABS = ["Learn", "Practice", "Translate", "Dictionary", "Profile"] as const;
 
 export function HomePlaceholder(): JSX.Element {
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const isSubmitting = useAuthStore((s) => s.isSubmitting);
+  const [error, setError] = useState<string | null>(null);
+
+  const onLogout = async (): Promise<void> => {
+    setError(null);
+    try {
+      await logout();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not log out.");
+    }
+  };
+
   return (
     <View style={styles.root}>
       <Text style={styles.brand}>SignBridge</Text>
       <Text style={styles.subtitle}>
-        AI-driven ASL recognition & accessible learning
+        Welcome{user?.displayName ? `, ${user.displayName}` : ""}
       </Text>
+      {user?.email ? <Text style={styles.email}>{user.email}</Text> : null}
+
+      <AuthBanner message={error} tone="error" />
+
       <Text style={styles.section}>Upcoming bottom tabs</Text>
       <View style={styles.tabRow}>
         {TABS.map((tab) => (
-          <View key={tab} style={styles.tabChip}>
+          <Pressable key={tab} style={styles.tabChip}>
             <Text style={styles.tabLabel}>{tab}</Text>
-          </View>
+          </Pressable>
         ))}
       </View>
-      <Text style={styles.hint}>
-        Scaffold ready. Auth & navigation land in ROADMAP Prompt 2.
-      </Text>
+
+      <View style={styles.logoutWrap}>
+        <PrimaryButton label="Log out" onPress={onLogout} loading={isSubmitting} />
+      </View>
     </View>
   );
 }
@@ -28,7 +52,7 @@ export function HomePlaceholder(): JSX.Element {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
@@ -36,21 +60,27 @@ const styles = StyleSheet.create({
   brand: {
     fontSize: 32,
     fontWeight: "800",
-    color: "#2C3E50",
+    color: colors.text,
     letterSpacing: -0.5,
   },
   subtitle: {
     marginTop: 8,
-    fontSize: 15,
-    color: "#7F8C8D",
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: "600",
     textAlign: "center",
-    lineHeight: 22,
+  },
+  email: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
   },
   section: {
-    marginTop: 28,
+    marginTop: 20,
     fontSize: 12,
     fontWeight: "700",
-    color: "#7F8C8D",
+    color: colors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
@@ -62,21 +92,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tabChip: {
-    backgroundColor: "#E8F1FA",
+    backgroundColor: colors.primarySoft,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   tabLabel: {
-    color: "#357ABD",
+    color: colors.primaryPressed,
     fontWeight: "700",
     fontSize: 13,
   },
-  hint: {
-    marginTop: 24,
-    fontSize: 13,
-    color: "#95A5A6",
-    textAlign: "center",
-    lineHeight: 18,
+  logoutWrap: {
+    marginTop: 28,
+    width: "100%",
+    maxWidth: 280,
   },
 });
