@@ -9,14 +9,41 @@ Thumbs.db
 *.swp
 *.swo
 
-# Environment variables
+# Environment variables & secrets
 .env
 .env.local
 .env.production
+*.pem
+*serviceAccount*.json
+google-services.json
+GoogleService-Info.plist
 
-# Dependencies & Build artifacts (for future stages)
+# Dependencies & build artifacts
 node_modules/
 .expo/
 dist/
 build/
+web-build/
 *.log
+npm-debug.log*
+yarn-error.log*
+
+# Frontend (Expo / React Native)
+frontend/node_modules/
+frontend/.expo/
+frontend/dist/
+frontend/android/
+frontend/ios/
+frontend/.env
+
+# Backend (Firebase)
+backend/.firebaserc
+backend/functions/node_modules/
+backend/functions/lib/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+
+# TypeScript
+*.tsbuildinfo

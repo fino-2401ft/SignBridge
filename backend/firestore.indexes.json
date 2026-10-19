@@ -1,0 +1,36 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "user_progress",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "lastAttemptAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "practice_sessions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "dictionary_gestures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "label", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "learning_paths",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "SignBridge",
+    "slug": "signbridge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "signbridge",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.signbridge.app"
+    },
+    "android": {
+      "package": "com.signbridge.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#E8F1FA",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "replace-with-eas-project-id"
+      }
+    }
+  }
+}

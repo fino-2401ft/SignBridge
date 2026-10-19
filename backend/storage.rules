@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Lesson & dictionary demo videos — authenticated read, admin write via Console/Admin SDK.
+    match /videos/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /thumbnails/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

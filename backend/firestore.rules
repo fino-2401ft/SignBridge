@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+
+    match /learning_paths/{pathId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /dictionary_gestures/{gestureId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /user_progress/{progressId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    match /practice_sessions/{sessionId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+    }
+  }
+}
