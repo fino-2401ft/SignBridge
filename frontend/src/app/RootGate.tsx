@@ -2,9 +2,9 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AuthScreen } from "../features/auth/AuthScreen";
+import { HomeScreen } from "../features/learning/HomeScreen";
 import { useAuthStore } from "../stores/useAuthStore";
 import { colors } from "../utils/theme";
-import { HomePlaceholder } from "./HomePlaceholder";
 
 export function RootGate(): JSX.Element {
   const initAuthListener = useAuthStore((s) => s.initAuthListener);
@@ -29,7 +29,7 @@ export function RootGate(): JSX.Element {
     return <AuthScreen />;
   }
 
-  return <HomePlaceholder />;
+  return <HomeScreen />;
 }
 
 const styles = StyleSheet.create({
