@@ -24,9 +24,31 @@ backend/
 5. Deploy rules: `firebase deploy --only firestore:rules,storage`
 6. Deploy functions: `firebase deploy --only functions`
 
-## Seed demo data
+## Learning Home + Lesson backend (FR-004 / FR-006 / FR-007 / FR-008)
+
+| Piece | Purpose |
+| :--- | :--- |
+| `learning_paths` | Published curriculum ordered by `order` |
+| `lessons` | Path lessons (video metadata, XP, gestures) |
+| `users/{uid}/path_progress/{pathId}` | Per-path completion % for Home |
+| `user_progress/{uid_lessonId}` | Per-lesson completion record |
+| Callable `getHomeLearningCatalog` | Auth-gated catalog + progress |
+| Callable `getLessonsForPath` | Lessons for Path Detail screen |
+| Callable `completeLesson` | Award XP + sync path/lesson progress |
+| Callable `syncPathProgress` | Client fallback path progress upsert |
+
+### Deploy
 
 ```bash
-npx ts-node scripts/seed-demo-data.ts          # dry-run
-npx ts-node scripts/seed-demo-data.ts --write  # requires Admin credentials
+firebase deploy --only firestore:rules,firestore:indexes,functions
 ```
+
+### Seed demo data
+
+```bash
+npx tsx scripts/seed-demo-data.ts
+npx tsx scripts/seed-demo-data.ts --write
+npx tsx scripts/seed-demo-data.ts --write --uid=<FIREBASE_UID>
+```
+
+`--uid` also seeds demo `path_progress` so Home/Lesson show real completion state.

@@ -124,8 +124,12 @@ export const useLessonStore = create<LessonState>((set, get) => ({
       };
       useLearningStore.setState({ progressByPathId });
 
-      const nextXp = user.totalXp + result.awardedXp;
-      const level = getLevelInfo(nextXp);
+      const bonus = result.pathBonusXp ?? 0;
+      const nextXp = result.totalXp ?? user.totalXp + result.awardedXp + bonus;
+      const level =
+        result.currentLevel !== undefined
+          ? { level: result.currentLevel }
+          : getLevelInfo(nextXp);
       useAuthStore.getState().setUser({
         ...user,
         totalXp: nextXp,

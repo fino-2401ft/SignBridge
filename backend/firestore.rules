@@ -35,6 +35,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Path-level progress for Home screen (FR-006 / FR-008)
+    match /users/{userId}/path_progress/{pathId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.pathId == pathId
+        && request.resource.data.progressPercent is number
+        && request.resource.data.progressPercent >= 0
+        && request.resource.data.progressPercent <= 100;
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
     match /user_progress/{progressId} {
       allow read: if isAuthenticated()
         && resource.data.userId == request.auth.uid;

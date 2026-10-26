@@ -243,15 +243,43 @@ async function fetchLessonsFromFirestore(pathId: string): Promise<Lesson[]> {
   return lessons;
 }
 
+async function fetchLessonsFromCallable(pathId: string): Promise<Lesson[]> {
+  const { app } = requireFirebase();
+  const functions = getFunctions(app);
+  const callable = httpsCallable<{ pathId: string }, { lessons: Array<Record<string, unknown>> }>(
+    functions,
+    "getLessonsForPath",
+  );
+  const result = await callable({ pathId });
+  const lessons: Lesson[] = [];
+  for (const raw of result.data.lessons ?? []) {
+    const id = typeof raw.id === "string" ? raw.id : "";
+    const mapped = mapLessonDoc(id, raw);
+    if (mapped) {
+      lessons.push(mapped);
+    }
+  }
+  return lessons.sort((a, b) => a.order - b.order);
+}
+
 export async function fetchLessonsForPath(pathId: string): Promise<{
   lessons: Lesson[];
-  source: "firestore" | "demo";
+  source: "firestore" | "callable" | "demo";
 }> {
   if (isFirebaseConfigured() && getFirebase()) {
     try {
       const lessons = await fetchLessonsFromFirestore(pathId);
       if (lessons.length > 0) {
         return { lessons, source: "firestore" };
+      }
+    } catch {
+      // Try callable next.
+    }
+
+    try {
+      const lessons = await fetchLessonsFromCallable(pathId);
+      if (lessons.length > 0) {
+        return { lessons, source: "callable" };
       }
     } catch {
       // Fall through to demo.
@@ -266,6 +294,9 @@ export interface CompleteLessonResult {
   progressPercent: number;
   completedLessonIds: string[];
   xpPendingSync: boolean;
+  totalXp?: number;
+  currentLevel?: number;
+  pathBonusXp?: number;
 }
 
 function delay(ms: number): Promise<void> {
@@ -274,9 +305,19 @@ function delay(ms: number): Promise<void> {
   });
 }
 
+interface CompleteLessonCallableResponse {
+  awardedXp: number;
+  progressPercent: number;
+  completedLessonIds: string[];
+  totalXp: number;
+  currentLevel: number;
+  pathBonusXp: number;
+  alreadyCompleted: boolean;
+}
+
 /**
  * Marks a lesson complete, updates path progress, awards XP.
- * Retries XP/progress sync once (FR-004 / FR-007).
+ * Prefers Cloud Function `completeLesson`, falls back to local + syncPathProgress.
  */
 export async function completeLesson(params: {
   userId: string;
@@ -286,6 +327,50 @@ export async function completeLesson(params: {
   completedLessonIds: string[];
   xpReward: number;
 }): Promise<CompleteLessonResult> {
+  if (isFirebaseConfigured() && getFirebase()) {
+    try {
+      const { app } = requireFirebase();
+      const functions = getFunctions(app);
+      const callable = httpsCallable<{ lessonId: string }, CompleteLessonCallableResponse>(
+        functions,
+        "completeLesson",
+      );
+      const result = await callable({ lessonId: params.lessonId });
+      return {
+        awardedXp: result.data.awardedXp,
+        progressPercent: result.data.progressPercent,
+        completedLessonIds: result.data.completedLessonIds,
+        xpPendingSync: false,
+        totalXp: result.data.totalXp,
+        currentLevel: result.data.currentLevel,
+        pathBonusXp: result.data.pathBonusXp,
+      };
+    } catch {
+      // Retry once via completeLesson, then local fallback.
+      await delay(1000);
+      try {
+        const { app } = requireFirebase();
+        const functions = getFunctions(app);
+        const callable = httpsCallable<{ lessonId: string }, CompleteLessonCallableResponse>(
+          functions,
+          "completeLesson",
+        );
+        const result = await callable({ lessonId: params.lessonId });
+        return {
+          awardedXp: result.data.awardedXp,
+          progressPercent: result.data.progressPercent,
+          completedLessonIds: result.data.completedLessonIds,
+          xpPendingSync: false,
+          totalXp: result.data.totalXp,
+          currentLevel: result.data.currentLevel,
+          pathBonusXp: result.data.pathBonusXp,
+        };
+      } catch {
+        // Continue to offline/local fallback.
+      }
+    }
+  }
+
   const completedLessonIds = Array.from(
     new Set([...params.completedLessonIds, params.lessonId]),
   );

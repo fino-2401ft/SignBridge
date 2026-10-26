@@ -28,6 +28,24 @@
       "collectionGroup": "learning_paths",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lessons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pathId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lessons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pathId", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
         { "fieldPath": "order", "order": "ASCENDING" }
       ]
     }
