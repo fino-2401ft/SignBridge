@@ -16,6 +16,7 @@ import { AuthBanner } from "../../components/ui/AuthBanner";
 import { MainTabBar } from "../../components/ui/MainTabBar";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { useLearningNavStore } from "../../stores/useLearningNavStore";
 import { useLearningStore } from "../../stores/useLearningStore";
 import type { LearningPathViewModel } from "../../types/learning";
 import type { MainTab } from "../../utils/constants";
@@ -33,6 +34,7 @@ export function HomeScreen(): JSX.Element {
   const loadCatalog = useLearningStore((s) => s.loadCatalog);
   const getPathViewModels = useLearningStore((s) => s.getPathViewModels);
   const getAggregateStats = useLearningStore((s) => s.getAggregateStats);
+  const openPath = useLearningNavStore((s) => s.openPath);
 
   const [activeTab, setActiveTab] = useState<MainTab>("Learn");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -86,7 +88,7 @@ export function HomeScreen(): JSX.Element {
       showToast(item.unlockHint || "Complete available paths to unlock more");
       return;
     }
-    showToast(`Opening “${item.path.title}”…`);
+    openPath(item.path.id);
   };
 
   const onTabChange = (tab: MainTab): void => {

@@ -23,5 +23,12 @@ export {
   UnlockConditionSchema,
   parseLearningPath,
 } from "./learning";
+export type {
+  Lesson,
+  LessonLoadState,
+  LessonStatus,
+  LessonViewModel,
+} from "./lesson";
+export { LessonSchema, parseLesson } from "./lesson";
 export type { UserProfile, UserRole } from "./user";
 export { UserProfileSchema, UserRoleSchema, parseUserProfile } from "./user";

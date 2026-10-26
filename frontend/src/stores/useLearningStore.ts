@@ -7,6 +7,7 @@ import type {
   PathProgress,
   UnlockCondition,
 } from "../types/learning";
+import { useAuthStore } from "./useAuthStore";
 
 interface LearningState {
   paths: LearningPath[];
@@ -89,7 +90,8 @@ export const useLearningStore = create<LearningState>((set, get) => ({
   loadCatalog: async () => {
     set({ loadState: "loading", errorMessage: null });
     try {
-      const { paths, progress } = await fetchLearningCatalog();
+      const userId = useAuthStore.getState().user?.uid ?? null;
+      const { paths, progress } = await fetchLearningCatalog(userId);
       const progressByPathId: Record<string, PathProgress> = {};
       for (const item of progress) {
         progressByPathId[item.pathId] = item;
