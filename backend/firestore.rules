@@ -35,6 +35,15 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Saved gestures for Practice Room CTA (FR-011)
+    match /users/{userId}/practice_queue/{gestureId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.gestureId == gestureId;
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
     // Path-level progress for Home screen (FR-006 / FR-008)
     match /users/{userId}/path_progress/{pathId} {
       allow read: if isOwner(userId);
