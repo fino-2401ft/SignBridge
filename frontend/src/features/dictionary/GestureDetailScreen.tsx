@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { LessonVideoPlayer } from "../../components/learning/LessonVideoPlayer";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
+import { addGestureToPracticeList } from "../../services/dictionaryService";
 import { useAppNavStore } from "../../stores/useAppNavStore";
 import { useDictionaryStore } from "../../stores/useDictionaryStore";
 import { categoryDisplayName } from "../../types/gesture";
@@ -27,11 +28,32 @@ export function GestureDetailScreen({
   const gestures = useDictionaryStore((s) => s.gestures);
 
   const [toast, setToast] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const gesture = useMemo(
     () => getGestureById(gestureId),
     [getGestureById, gestureId, gestures],
   );
+
+  const onAddToPractice = async (): Promise<void> => {
+    if (!gesture || saving) {
+      return;
+    }
+    setSaving(true);
+    try {
+      const result = await addGestureToPracticeList(gesture.gestureId);
+      setToast(
+        result.alreadyAdded
+          ? `“${gesture.label}” is already in Practice`
+          : `“${gesture.label}” saved for Practice`,
+      );
+    } catch {
+      setToast("Could not save gesture. Try again.");
+    } finally {
+      setSaving(false);
+      setTimeout(() => setToast(null), 2200);
+    }
+  };
 
   if (!gesture) {
     return (
@@ -126,10 +148,8 @@ export function GestureDetailScreen({
 
         <PrimaryButton
           label="Add to Practice List"
-          onPress={() => {
-            setToast(`“${gesture.label}” saved for Practice`);
-            setTimeout(() => setToast(null), 2200);
-          }}
+          loading={saving}
+          onPress={() => void onAddToPractice()}
         />
 
         <Pressable
