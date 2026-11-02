@@ -1,4 +1,5 @@
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import type { GestureCategory, GestureDTO } from "../types/gesture";
 import {
   GestureSchema,
@@ -392,10 +393,36 @@ async function fetchFromFirestore(): Promise<GestureDTO[]> {
   );
   const gestures: GestureDTO[] = [];
   for (const docSnap of snap.docs) {
-    const mapped = mapGestureDoc(
-      docSnap.id,
-      docSnap.data() as Record<string, unknown>,
-    );
+    const data = docSnap.data() as Record<string, unknown>;
+    if (data.isPublished === false) {
+      continue;
+    }
+    const mapped = mapGestureDoc(docSnap.id, data);
+    if (mapped) {
+      gestures.push(mapped);
+    }
+  }
+  return gestures;
+}
+
+async function fetchFromCallable(category?: GestureCategory): Promise<GestureDTO[]> {
+  const { app } = requireFirebase();
+  const functions = getFunctions(app);
+  const callable = httpsCallable<
+    { category?: string },
+    { gestures: Array<Record<string, unknown>> }
+  >(functions, "getDictionaryGestures");
+
+  const result = await callable(category ? { category } : {});
+  const gestures: GestureDTO[] = [];
+  for (const raw of result.data.gestures ?? []) {
+    const id =
+      typeof raw.gestureId === "string"
+        ? raw.gestureId
+        : typeof raw.id === "string"
+          ? raw.id
+          : "";
+    const mapped = mapGestureDoc(id, raw);
     if (mapped) {
       gestures.push(mapped);
     }
@@ -405,7 +432,7 @@ async function fetchFromFirestore(): Promise<GestureDTO[]> {
 
 export async function fetchDictionaryGestures(): Promise<{
   gestures: GestureDTO[];
-  source: "firestore" | "demo";
+  source: "firestore" | "callable" | "demo";
 }> {
   if (isFirebaseConfigured() && getFirebase()) {
     try {
@@ -414,8 +441,37 @@ export async function fetchDictionaryGestures(): Promise<{
         return { gestures, source: "firestore" };
       }
     } catch {
+      // Try callable next.
+    }
+
+    try {
+      const gestures = await fetchFromCallable();
+      if (gestures.length > 0) {
+        return { gestures, source: "callable" };
+      }
+    } catch {
       // Fall through to demo.
     }
   }
   return { gestures: demoGestures(), source: "demo" };
+}
+
+export async function addGestureToPracticeList(
+  gestureId: string,
+): Promise<{ alreadyAdded: boolean; source: "callable" | "local" }> {
+  if (isFirebaseConfigured() && getFirebase()) {
+    try {
+      const { app } = requireFirebase();
+      const functions = getFunctions(app);
+      const callable = httpsCallable<
+        { gestureId: string },
+        { gestureId: string; alreadyAdded: boolean }
+      >(functions, "addToPracticeList");
+      const result = await callable({ gestureId });
+      return { alreadyAdded: result.data.alreadyAdded, source: "callable" };
+    } catch {
+      // Local acknowledgment when offline / function unavailable.
+    }
+  }
+  return { alreadyAdded: false, source: "local" };
 }
