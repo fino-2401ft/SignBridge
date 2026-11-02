@@ -45,3 +45,14 @@ export type {
 export { LessonSchema, parseLesson } from "./lesson";
 export type { UserProfile, UserRole } from "./user";
 export { UserProfileSchema, UserRoleSchema, parseUserProfile } from "./user";
+export type {
+  DictionaryLoadState,
+  Sign,
+  SignDifficulty,
+} from "./dictionary";
+export {
+  DEMO_SIGNS,
+  SignDifficultySchema,
+  SignSchema,
+  parseSign,
+} from "./dictionary";
