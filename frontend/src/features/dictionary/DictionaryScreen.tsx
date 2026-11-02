@@ -1,462 +1,407 @@
 import type { JSX } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
+import { GestureCard } from "../../components/dictionary/GestureCard";
 import { MainTabBar } from "../../components/ui/MainTabBar";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
-import { useCategories, useSignsList } from "../../hooks/useDictionary";
-import type { Sign, SignDifficulty } from "../../types/dictionary";
+import { useAppNavStore } from "../../stores/useAppNavStore";
+import { useDictionaryStore } from "../../stores/useDictionaryStore";
+import type { GestureDTO } from "../../types/gesture";
+import { DICTIONARY_CATEGORIES } from "../../types/gesture";
 import type { MainTab } from "../../utils/constants";
 import { colors, radii, touchMin } from "../../utils/theme";
-import { DictionaryDetailModal } from "./DictionaryDetailModal";
 
-interface DictionaryScreenProps {
-  onBack?: () => void;
-  onNavigateTab?: (tab: MainTab) => void;
-}
+type DictionaryMode = "browse" | "search";
 
-function getDifficultyTone(difficulty: SignDifficulty): { bg: string; text: string } {
-  switch (difficulty) {
-    case "Easy":
-      return { bg: colors.successSoft, text: colors.success };
-    case "Medium":
-      return { bg: colors.warningSoft, text: colors.warning };
-    case "Hard":
-      return { bg: colors.errorSoft, text: colors.error };
-    default:
-      return { bg: colors.primarySoft, text: colors.primary };
-  }
-}
+export function DictionaryScreen(): JSX.Element {
+  const activeTab = useAppNavStore((s) => s.activeTab);
+  const setTab = useAppNavStore((s) => s.setTab);
+  const openGestureDetail = useAppNavStore((s) => s.openGestureDetail);
 
-export function DictionaryScreen({
-  onBack,
-  onNavigateTab,
-}: DictionaryScreenProps): JSX.Element {
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [activeSign, setActiveSign] = useState<Sign | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const loadState = useDictionaryStore((s) => s.loadState);
+  const errorMessage = useDictionaryStore((s) => s.errorMessage);
+  const query = useDictionaryStore((s) => s.query);
+  const selectedCategory = useDictionaryStore((s) => s.selectedCategory);
+  const gestures = useDictionaryStore((s) => s.gestures);
+  const loadGestures = useDictionaryStore((s) => s.loadGestures);
+  const setQuery = useDictionaryStore((s) => s.setQuery);
+  const setSelectedCategory = useDictionaryStore((s) => s.setSelectedCategory);
+  const getVisibleGestures = useDictionaryStore((s) => s.getVisibleGestures);
+  const getCategoryCounts = useDictionaryStore((s) => s.getCategoryCounts);
 
-  const { signs, loadState, errorMessage, reload } = useSignsList();
-  const { categories } = useCategories();
+  const [mode, setMode] = useState<DictionaryMode>("browse");
+  const [draftQuery, setDraftQuery] = useState(query);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const allCategories = useMemo(() => {
-    return ["All", ...categories.filter((c) => c !== "All")];
-  }, [categories]);
-
-  const filteredSigns = useMemo(() => {
-    let result = signs;
-
-    if (selectedCategory && selectedCategory !== "All") {
-      result = result.filter(
-        (s) => s.category.toLowerCase() === selectedCategory.toLowerCase(),
-      );
+  useEffect(() => {
+    if (loadState === "idle") {
+      void loadGestures();
     }
+  }, [loadState, loadGestures]);
 
-    const trimmed = searchQuery.trim().toLowerCase();
-    if (trimmed) {
-      result = result.filter(
-        (s) =>
-          s.title.toLowerCase().includes(trimmed) ||
-          s.category.toLowerCase().includes(trimmed) ||
-          s.keywords.some((k) => k.toLowerCase().includes(trimmed)) ||
-          s.description.toLowerCase().includes(trimmed),
-      );
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
+
+  const visible = useMemo(
+    () => getVisibleGestures(),
+    [getVisibleGestures, gestures, query, selectedCategory],
+  );
+
+  const counts = useMemo(
+    () => getCategoryCounts(),
+    [getCategoryCounts, gestures],
+  );
+
+  const onChangeQuery = (text: string): void => {
+    setDraftQuery(text);
+    setMode("search");
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
-
-    return result.sort((a, b) => a.title.localeCompare(b.title));
-  }, [signs, selectedCategory, searchQuery]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await reload();
-    setRefreshing(false);
-  }, [reload]);
-
-  const openSignDetail = (sign: Sign): void => {
-    setActiveSign(sign);
-    setModalVisible(true);
+    debounceRef.current = setTimeout(() => {
+      setQuery(text);
+    }, 300);
   };
 
-  const closeSignDetail = (): void => {
-    setModalVisible(false);
-    setActiveSign(null);
-  };
-
-  const renderSignCard = ({ item }: { item: Sign }): JSX.Element => {
-    const diff = getDifficultyTone(item.difficulty);
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`View gesture for ${item.title}`}
-        onPress={() => openSignDetail(item)}
-        style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-      >
-        <View style={styles.cardHeader}>
-          <View style={styles.cardEmojiWrap}>
-            <Text style={styles.cardEmoji}>{item.emoji}</Text>
-          </View>
-          <View style={[styles.cardDiffPill, { backgroundColor: diff.bg }]}>
-            <Text style={[styles.cardDiffText, { color: diff.text }]}>{item.difficulty}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.cardCategory} numberOfLines={1}>
-          {item.category}
-        </Text>
-        <Text style={styles.cardDesc} numberOfLines={2}>
-          {item.description || "Tap to view sign demonstration."}
-        </Text>
-      </Pressable>
+  const onSelectCategory = (categoryId: (typeof DICTIONARY_CATEGORIES)[number]["id"]): void => {
+    setMode("browse");
+    setDraftQuery("");
+    setQuery("");
+    setSelectedCategory(
+      selectedCategory === categoryId ? null : categoryId,
     );
   };
 
+  const onGesturePress = (gesture: GestureDTO): void => {
+    openGestureDetail(gesture.gestureId);
+  };
+
+  const onTabChange = (tab: MainTab): void => {
+    setTab(tab);
+  };
+
+  const selectedMeta = DICTIONARY_CATEGORIES.find(
+    (item) => item.id === selectedCategory,
+  );
+
   return (
-    <View style={styles.container}>
-      {/* Top Header */}
-      <View style={styles.header}>
-        {onBack && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Back to Home"
-            onPress={onBack}
-            style={({ pressed }) => [styles.backBtn, pressed && styles.backBtnPressed]}
-          >
-            <Text style={styles.backBtnText}>← Back</Text>
-          </Pressable>
-        )}
-        <View style={styles.headerTitleWrap}>
-          <Text style={styles.title}>ASL Dictionary</Text>
-          <Text style={styles.subtitle}>
-            Explore {signs.length} signs with video demos
-          </Text>
+    <View style={styles.root}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>Dictionary</Text>
+        <Text style={styles.subtitle}>Search or browse ASL gestures</Text>
+
+        <View style={styles.searchWrap}>
+          <TextInput
+            value={draftQuery}
+            onChangeText={onChangeQuery}
+            onFocus={() => setMode("search")}
+            placeholder="Search gestures..."
+            placeholderTextColor={colors.placeholder}
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={styles.searchInput}
+            accessibilityLabel="Search gestures"
+          />
+          {draftQuery.length > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
+              onPress={() => {
+                setDraftQuery("");
+                setQuery("");
+                setMode("browse");
+              }}
+              style={styles.clearBtn}
+            >
+              <Text style={styles.clearText}>Clear</Text>
+            </Pressable>
+          ) : null}
         </View>
-      </View>
 
-      {/* Search Input Bar */}
-      <View style={styles.searchBar}>
-        <Text style={styles.searchIcon}>⌕</Text>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by sign, category, or keyword…"
-          placeholderTextColor={colors.placeholder}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          returnKeyType="search"
-          autoCorrect={false}
-        />
-        {searchQuery.length > 0 && (
+        <View style={styles.modeRow}>
           <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Clear search text"
-            onPress={() => setSearchQuery("")}
-            style={styles.clearBtn}
+            onPress={() => setMode("browse")}
+            style={[styles.modeChip, mode === "browse" && styles.modeChipActive]}
           >
-            <Text style={styles.clearBtnText}>✕</Text>
+            <Text style={[styles.modeText, mode === "browse" && styles.modeTextActive]}>
+              Categories
+            </Text>
           </Pressable>
-        )}
-      </View>
-
-      {/* Horizontal Category Filter Pills */}
-      <View style={styles.categoryBar}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScroll}
-        >
-          {allCategories.map((cat) => {
-            const active = cat === selectedCategory;
-            return (
-              <Pressable
-                key={cat}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                onPress={() => setSelectedCategory(cat)}
-                style={[styles.categoryPill, active && styles.categoryPillActive]}
-              >
-                <Text
-                  style={[styles.categoryText, active && styles.categoryTextActive]}
-                >
-                  {cat}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* Body: Loading / Error / Empty / Grid */}
-      {loadState === "loading" && signs.length === 0 ? (
-        <View style={styles.centerState}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.stateText}>Loading dictionary catalog…</Text>
+          <Pressable
+            onPress={() => setMode("search")}
+            style={[styles.modeChip, mode === "search" && styles.modeChipActive]}
+          >
+            <Text style={[styles.modeText, mode === "search" && styles.modeTextActive]}>
+              Results
+            </Text>
+          </Pressable>
         </View>
-      ) : loadState === "error" && signs.length === 0 ? (
-        <View style={styles.centerState}>
-          <Text style={styles.stateEmoji}>⚠️</Text>
-          <Text style={styles.stateTitle}>Unable to load dictionary</Text>
-          <Text style={styles.stateText}>
-            {errorMessage ?? "Check your network and try again."}
-          </Text>
-          <View style={styles.retryBtnWrap}>
-            <PrimaryButton label="Retry" onPress={() => void reload()} />
+
+        {loadState === "loading" || loadState === "idle" ? (
+          <View style={styles.stateBox}>
+            <ActivityIndicator color={colors.primary} />
+            <Text style={styles.stateText}>Loading dictionary…</Text>
           </View>
-        </View>
-      ) : filteredSigns.length === 0 ? (
-        <View style={styles.centerState}>
-          <Text style={styles.stateEmoji}>🔍</Text>
-          <Text style={styles.stateTitle}>No signs found</Text>
-          <Text style={styles.stateText}>
-            Try adjusting your search query or select another category filter.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredSigns}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.rowWrapper}
-          contentContainerStyle={styles.listContent}
-          renderItem={renderSignCard}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => void onRefresh()}
-              tintColor={colors.primary}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+        ) : null}
 
-      {/* Bottom Main Tab Bar */}
-      <MainTabBar
-        activeTab="Dictionary"
-        onChange={(tab) => {
-          if (tab === "Learn" && onBack) {
-            onBack();
-          } else if (onNavigateTab) {
-            onNavigateTab(tab);
-          }
-        }}
-      />
+        {loadState === "error" ? (
+          <View style={styles.stateBox}>
+            <Text style={styles.stateTitle}>Search failed</Text>
+            <Text style={styles.stateText}>{errorMessage ?? "Please try again."}</Text>
+            <View style={styles.retryWrap}>
+              <PrimaryButton label="Retry" onPress={() => void loadGestures()} />
+            </View>
+          </View>
+        ) : null}
 
-      {/* Video Demonstration Modal */}
-      <DictionaryDetailModal
-        sign={activeSign}
-        visible={modalVisible}
-        onClose={closeSignDetail}
-      />
+        {loadState === "ready" && mode === "browse" && !selectedCategory ? (
+          <View style={styles.grid}>
+            {DICTIONARY_CATEGORIES.map((category) => {
+              const count = counts[category.id] ?? 0;
+              if (count === 0) {
+                return null;
+              }
+              return (
+                <Pressable
+                  key={category.id}
+                  accessibilityRole="button"
+                  onPress={() => onSelectCategory(category.id)}
+                  style={({ pressed }) => [
+                    styles.categoryCard,
+                    pressed && styles.categoryPressed,
+                  ]}
+                >
+                  <Text style={styles.categoryIcon}>{category.icon}</Text>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <Text style={styles.categoryCount}>{count}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {loadState === "ready" && (mode === "search" || selectedCategory) ? (
+          <View>
+            <View style={styles.sectionHead}>
+              <Text style={styles.sectionTitle}>
+                {selectedMeta
+                  ? `${selectedMeta.icon} ${selectedMeta.name}`
+                  : query.trim()
+                    ? `Results for “${query.trim()}”`
+                    : "All gestures"}
+              </Text>
+              {selectedCategory ? (
+                <Pressable onPress={() => setSelectedCategory(null)}>
+                  <Text style={styles.link}>All categories</Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {visible.length === 0 ? (
+              <View style={styles.stateBox}>
+                <Text style={styles.stateTitle}>
+                  {query.trim()
+                    ? `No results for “${query.trim()}”`
+                    : "No gestures in this category"}
+                </Text>
+                <Text style={styles.stateText}>
+                  Check spelling, try another word, or browse by category.
+                </Text>
+              </View>
+            ) : (
+              visible.map((gesture) => (
+                <View key={gesture.gestureId} style={styles.cardWrap}>
+                  <GestureCard gesture={gesture} onPress={onGesturePress} />
+                </View>
+              ))
+            )}
+          </View>
+        ) : null}
+      </ScrollView>
+
+      <MainTabBar activeTab={activeTab} onChange={onTabChange} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: colors.bg,
   },
-  header: {
+  scroll: {
+    flex: 1,
+  },
+  content: {
     paddingHorizontal: 18,
     paddingTop: 8,
-    paddingBottom: 10,
-    gap: 8,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  backBtnPressed: {
-    opacity: 0.7,
-  },
-  backBtnText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: colors.primary,
-  },
-  headerTitleWrap: {
-    gap: 2,
+    paddingBottom: 24,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 24,
+    fontWeight: "800",
     color: colors.text,
     letterSpacing: -0.4,
   },
   subtitle: {
-    fontSize: 13,
+    marginTop: 4,
+    marginBottom: 14,
+    fontSize: 14,
     color: colors.textSecondary,
   },
-  searchBar: {
+  searchWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    marginHorizontal: 18,
-    paddingHorizontal: 12,
-    height: 44,
     gap: 8,
-  },
-  searchIcon: {
-    fontSize: 18,
-    color: colors.textSecondary,
+    marginBottom: 12,
   },
   searchInput: {
     flex: 1,
-    height: "100%",
-    fontSize: 14,
+    minHeight: touchMin,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    fontSize: 16,
     color: colors.text,
   },
   clearBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: "center",
+    minHeight: touchMin,
     justifyContent: "center",
-    backgroundColor: colors.bg,
+    paddingHorizontal: 8,
   },
-  clearBtnText: {
-    fontSize: 12,
-    color: colors.textSecondary,
+  clearText: {
     fontWeight: "700",
+    color: colors.primary,
   },
-  categoryBar: {
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  categoryScroll: {
-    paddingHorizontal: 18,
+  modeRow: {
+    flexDirection: "row",
     gap: 8,
+    marginBottom: 16,
   },
-  categoryPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: radii.pill,
-    backgroundColor: colors.surface,
+  modeChip: {
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  categoryPillActive: {
+  modeChipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  categoryText: {
+  modeText: {
     fontSize: 13,
+    fontWeight: "700",
+    color: colors.textSecondary,
+  },
+  modeTextActive: {
+    color: "#FFFFFF",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  categoryCard: {
+    width: "31%",
+    flexGrow: 1,
+    minWidth: "30%",
+    maxWidth: "48%",
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    alignItems: "center",
+    gap: 4,
+  },
+  categoryPressed: {
+    borderColor: colors.primary,
+    transform: [{ scale: 0.97 }],
+  },
+  categoryIcon: {
+    fontSize: 24,
+  },
+  categoryName: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.text,
+    textAlign: "center",
+  },
+  categoryCount: {
+    fontSize: 12,
     fontWeight: "600",
     color: colors.textSecondary,
   },
-  categoryTextActive: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-  },
-  listContent: {
-    paddingHorizontal: 18,
-    paddingTop: 6,
-    paddingBottom: 24,
-  },
-  rowWrapper: {
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  card: {
-    width: "48%",
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 12,
-    gap: 4,
-  },
-  cardPressed: {
-    borderColor: colors.primary,
-    transform: [{ scale: 0.98 }],
-  },
-  cardHeader: {
+  sectionHead: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  cardEmojiWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primarySoft,
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 12,
+    gap: 8,
   },
-  cardEmoji: {
-    fontSize: 20,
-  },
-  cardDiffPill: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: radii.pill,
-  },
-  cardDiffText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  cardTitle: {
-    fontSize: 15,
+  sectionTitle: {
+    flex: 1,
+    fontSize: 16,
     fontWeight: "700",
     color: colors.text,
   },
-  cardCategory: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: "600",
+  link: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.primary,
   },
-  cardDesc: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 16,
-    marginTop: 2,
+  cardWrap: {
+    marginBottom: 10,
   },
-  centerState: {
-    flex: 1,
+  stateBox: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: "dashed",
     gap: 8,
-  },
-  stateEmoji: {
-    fontSize: 32,
-    marginBottom: 4,
   },
   stateTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: colors.text,
+    textAlign: "center",
   },
   stateText: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
     textAlign: "center",
-    lineHeight: 18,
+    lineHeight: 20,
   },
-  retryBtnWrap: {
-    marginTop: 12,
-    width: 140,
+  retryWrap: {
+    marginTop: 8,
+    width: "100%",
+    maxWidth: 220,
   },
 });

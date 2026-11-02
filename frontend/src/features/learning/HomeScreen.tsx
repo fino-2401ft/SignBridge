@@ -15,6 +15,7 @@ import { QuickActions } from "../../components/learning/QuickActions";
 import { AuthBanner } from "../../components/ui/AuthBanner";
 import { MainTabBar } from "../../components/ui/MainTabBar";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
+import { useAppNavStore } from "../../stores/useAppNavStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useLearningNavStore } from "../../stores/useLearningNavStore";
 import { useLearningStore } from "../../stores/useLearningStore";
@@ -35,9 +36,9 @@ export function HomeScreen(): JSX.Element {
   const getPathViewModels = useLearningStore((s) => s.getPathViewModels);
   const getAggregateStats = useLearningStore((s) => s.getAggregateStats);
   const openPath = useLearningNavStore((s) => s.openPath);
-  const openDictionary = useLearningNavStore((s) => s.openDictionary);
 
-  const [activeTab, setActiveTab] = useState<MainTab>("Learn");
+  const activeTab = useAppNavStore((s) => s.activeTab);
+  const setTab = useAppNavStore((s) => s.setTab);
   const [profileOpen, setProfileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
@@ -55,14 +56,12 @@ export function HomeScreen(): JSX.Element {
     };
   }, []);
 
-  const showToast = useCallback((msg: string): void => {
+  const showToast = useCallback((message: string): void => {
+    setToast(message);
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
     }
-    setToast(msg);
-    toastTimerRef.current = setTimeout(() => {
-      setToast(null);
-    }, 2400);
+    toastTimerRef.current = setTimeout(() => setToast(null), 2400);
   }, []);
 
   const totalXp = user?.totalXp ?? 0;
@@ -77,8 +76,14 @@ export function HomeScreen(): JSX.Element {
     [getAggregateStats, paths, progressByPathId],
   );
 
-  const firstName = user?.displayName ? user.displayName.split(" ")[0] : "Learner";
-  const avatarLetter = (user?.displayName || user?.email || "U").charAt(0).toUpperCase();
+  const firstName = useMemo(() => {
+    if (!user?.displayName) {
+      return "there";
+    }
+    return user.displayName.split(" ")[0] ?? user.displayName;
+  }, [user?.displayName]);
+
+  const avatarLetter = (user?.displayName ?? "U").charAt(0).toUpperCase();
 
   const onPathPress = (item: LearningPathViewModel): void => {
     if (item.locked) {
@@ -89,23 +94,17 @@ export function HomeScreen(): JSX.Element {
   };
 
   const onTabChange = (tab: MainTab): void => {
-    setActiveTab(tab);
     if (tab === "Profile") {
       setProfileOpen(true);
+      setTab("Learn");
       return;
     }
-    if (tab === "Dictionary") {
-      openDictionary();
-      return;
-    }
-    if (tab !== "Learn") {
-      showToast(`${tab} — coming in next milestone`);
-    }
+    setTab(tab);
   };
 
   const closeProfile = (): void => {
     setProfileOpen(false);
-    setActiveTab("Learn");
+    setTab("Learn");
   };
 
   const onLogout = async (): Promise<void> => {
@@ -148,7 +147,6 @@ export function HomeScreen(): JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="Open profile"
             onPress={() => {
-              setActiveTab("Profile");
               setProfileOpen(true);
             }}
             style={({ pressed }) => [styles.avatar, pressed && styles.avatarPressed]}
@@ -169,12 +167,7 @@ export function HomeScreen(): JSX.Element {
         <View style={styles.sectionGap}>
           <QuickActions
             onSelect={(tab) => {
-              if (tab === "Dictionary") {
-                openDictionary();
-              } else {
-                setActiveTab(tab);
-                showToast(`${tab} — coming in next milestone`);
-              }
+              setTab(tab);
             }}
           />
         </View>

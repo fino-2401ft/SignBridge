@@ -8,8 +8,21 @@ export {
   LoginFormSchema,
   RegisterFormSchema,
 } from "./auth";
-export type { GestureCategory, GestureDTO } from "./gesture";
-export { GestureCategorySchema, GestureSchema, parseGesture } from "./gesture";
+export type {
+  DictionaryCategoryMeta,
+  GestureCategory,
+  GestureDTO,
+  GestureDifficulty,
+} from "./gesture";
+export {
+  DICTIONARY_CATEGORIES,
+  GestureCategorySchema,
+  GestureDifficultySchema,
+  GestureSchema,
+  categoryDisplayName,
+  normalizeCategory,
+  parseGesture,
+} from "./gesture";
 export type {
   LearningLoadState,
   LearningPath,

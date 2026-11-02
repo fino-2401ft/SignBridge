@@ -1,6 +1,11 @@
 import * as admin from "firebase-admin";
 import { auth } from "firebase-functions/v1";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import {
+  addGestureToPracticeQueue,
+  fetchGestureById,
+  fetchPublishedGestures,
+} from "./dictionary/catalog";
 import { buildLearningCatalog } from "./learning/catalog";
 import {
   completeLessonForUser,
@@ -85,6 +90,73 @@ export const completeLesson = onCall(async (request) => {
       throw new HttpsError("not-found", "Lesson unavailable.");
     }
     throw new HttpsError("internal", "Could not complete lesson.");
+  }
+});
+
+/**
+ * Dictionary catalog for search / category browse (FR-009 / FR-010).
+ */
+export const getDictionaryGestures = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Sign in to load the dictionary.");
+  }
+
+  const category = (request.data as { category?: unknown }).category;
+  const categoryFilter =
+    typeof category === "string" && category.length > 0 ? category : undefined;
+
+  const gestures = await fetchPublishedGestures(
+    admin.firestore(),
+    categoryFilter,
+  );
+
+  return { gestures, count: gestures.length };
+});
+
+/**
+ * Single gesture detail (FR-011).
+ */
+export const getGestureDetail = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Sign in to view gesture details.");
+  }
+
+  const gestureId = (request.data as { gestureId?: unknown }).gestureId;
+  if (typeof gestureId !== "string" || gestureId.length === 0) {
+    throw new HttpsError("invalid-argument", "gestureId is required.");
+  }
+
+  const gesture = await fetchGestureById(admin.firestore(), gestureId);
+  if (!gesture) {
+    throw new HttpsError("not-found", "Gesture unavailable.");
+  }
+
+  return { gesture };
+});
+
+/**
+ * Add a dictionary gesture to the user's practice queue (FR-011 CTA).
+ */
+export const addToPracticeList = onCall(async (request) => {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Sign in to save gestures.");
+  }
+
+  const gestureId = (request.data as { gestureId?: unknown }).gestureId;
+  if (typeof gestureId !== "string" || gestureId.length === 0) {
+    throw new HttpsError("invalid-argument", "gestureId is required.");
+  }
+
+  try {
+    return await addGestureToPracticeQueue(admin.firestore(), {
+      userId: request.auth.uid,
+      gestureId,
+    });
+  } catch (err) {
+    if (err instanceof Error && err.message === "GESTURE_NOT_FOUND") {
+      throw new HttpsError("not-found", "Gesture unavailable.");
+    }
+    throw new HttpsError("internal", "Could not add gesture to practice list.");
   }
 });
 
