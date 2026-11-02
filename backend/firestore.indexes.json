@@ -25,6 +25,23 @@
       ]
     },
     {
+      "collectionGroup": "dictionary_gestures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "label", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "dictionary_gestures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "label", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "learning_paths",
       "queryScope": "COLLECTION",
       "fields": [
