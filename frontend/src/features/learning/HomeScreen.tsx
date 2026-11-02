@@ -35,6 +35,7 @@ export function HomeScreen(): JSX.Element {
   const getPathViewModels = useLearningStore((s) => s.getPathViewModels);
   const getAggregateStats = useLearningStore((s) => s.getAggregateStats);
   const openPath = useLearningNavStore((s) => s.openPath);
+  const openDictionary = useLearningNavStore((s) => s.openDictionary);
 
   const [activeTab, setActiveTab] = useState<MainTab>("Learn");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -54,12 +55,14 @@ export function HomeScreen(): JSX.Element {
     };
   }, []);
 
-  const showToast = useCallback((message: string): void => {
-    setToast(message);
+  const showToast = useCallback((msg: string): void => {
     if (toastTimerRef.current) {
       clearTimeout(toastTimerRef.current);
     }
-    toastTimerRef.current = setTimeout(() => setToast(null), 2400);
+    setToast(msg);
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, 2400);
   }, []);
 
   const totalXp = user?.totalXp ?? 0;
@@ -74,14 +77,8 @@ export function HomeScreen(): JSX.Element {
     [getAggregateStats, paths, progressByPathId],
   );
 
-  const firstName = useMemo(() => {
-    if (!user?.displayName) {
-      return "there";
-    }
-    return user.displayName.split(" ")[0] ?? user.displayName;
-  }, [user?.displayName]);
-
-  const avatarLetter = (user?.displayName ?? "U").charAt(0).toUpperCase();
+  const firstName = user?.displayName ? user.displayName.split(" ")[0] : "Learner";
+  const avatarLetter = (user?.displayName || user?.email || "U").charAt(0).toUpperCase();
 
   const onPathPress = (item: LearningPathViewModel): void => {
     if (item.locked) {
@@ -95,6 +92,10 @@ export function HomeScreen(): JSX.Element {
     setActiveTab(tab);
     if (tab === "Profile") {
       setProfileOpen(true);
+      return;
+    }
+    if (tab === "Dictionary") {
+      openDictionary();
       return;
     }
     if (tab !== "Learn") {
@@ -168,8 +169,12 @@ export function HomeScreen(): JSX.Element {
         <View style={styles.sectionGap}>
           <QuickActions
             onSelect={(tab) => {
-              setActiveTab(tab);
-              showToast(`${tab} — coming in next milestone`);
+              if (tab === "Dictionary") {
+                openDictionary();
+              } else {
+                setActiveTab(tab);
+                showToast(`${tab} — coming in next milestone`);
+              }
             }}
           />
         </View>
