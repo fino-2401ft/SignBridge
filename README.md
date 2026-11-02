@@ -10,6 +10,7 @@
 SignBridge/
 ├── frontend/          # Expo React Native (Android-first)
 ├── backend/           # Firebase (Auth, Firestore, Storage, Functions)
+├── ai-service/        # PyTorch BiLSTM + MediaPipe + FastAPI WebSocket Server
 ├── docs/              # Spec-driven product & architecture docs
 ├── 6-ui-design/       # HTML UI prototypes
 └── AGENTS.md          # AI coding rules & directory conventions
@@ -72,6 +73,18 @@ npx ts-node scripts/seed-demo-data.ts
 ```
 
 See [backend/README.md](backend/README.md) for details.
+
+---
+
+## AI Service (Python / FastAPI)
+
+```bash
+cd ai-service
+pip install -r requirements.txt
+python src/server.py
+```
+
+See [ai-service/README.md](ai-service/README.md) for full architecture and WebSocket API details.
 
 ---
 
