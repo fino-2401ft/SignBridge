@@ -15,6 +15,7 @@ import { QuickActions } from "../../components/learning/QuickActions";
 import { AuthBanner } from "../../components/ui/AuthBanner";
 import { MainTabBar } from "../../components/ui/MainTabBar";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
+import { useAppNavStore } from "../../stores/useAppNavStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useLearningNavStore } from "../../stores/useLearningNavStore";
 import { useLearningStore } from "../../stores/useLearningStore";
@@ -36,7 +37,8 @@ export function HomeScreen(): JSX.Element {
   const getAggregateStats = useLearningStore((s) => s.getAggregateStats);
   const openPath = useLearningNavStore((s) => s.openPath);
 
-  const [activeTab, setActiveTab] = useState<MainTab>("Learn");
+  const activeTab = useAppNavStore((s) => s.activeTab);
+  const setTab = useAppNavStore((s) => s.setTab);
   const [profileOpen, setProfileOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [logoutError, setLogoutError] = useState<string | null>(null);
@@ -92,19 +94,17 @@ export function HomeScreen(): JSX.Element {
   };
 
   const onTabChange = (tab: MainTab): void => {
-    setActiveTab(tab);
     if (tab === "Profile") {
       setProfileOpen(true);
+      setTab("Learn");
       return;
     }
-    if (tab !== "Learn") {
-      showToast(`${tab} — coming in next milestone`);
-    }
+    setTab(tab);
   };
 
   const closeProfile = (): void => {
     setProfileOpen(false);
-    setActiveTab("Learn");
+    setTab("Learn");
   };
 
   const onLogout = async (): Promise<void> => {
@@ -147,7 +147,6 @@ export function HomeScreen(): JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="Open profile"
             onPress={() => {
-              setActiveTab("Profile");
               setProfileOpen(true);
             }}
             style={({ pressed }) => [styles.avatar, pressed && styles.avatarPressed]}
@@ -168,8 +167,7 @@ export function HomeScreen(): JSX.Element {
         <View style={styles.sectionGap}>
           <QuickActions
             onSelect={(tab) => {
-              setActiveTab(tab);
-              showToast(`${tab} — coming in next milestone`);
+              setTab(tab);
             }}
           />
         </View>

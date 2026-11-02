@@ -2,10 +2,11 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { AuthScreen } from "../features/auth/AuthScreen";
-import { LearningShell } from "../features/learning/LearningShell";
+import { useAppNavStore } from "../stores/useAppNavStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useLearningNavStore } from "../stores/useLearningNavStore";
 import { colors } from "../utils/theme";
+import { MainShell } from "./MainShell";
 
 export function RootGate(): JSX.Element {
   const initAuthListener = useAuthStore((s) => s.initAuthListener);
@@ -13,6 +14,7 @@ export function RootGate(): JSX.Element {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isLoading = useAuthStore((s) => s.isLoading);
   const openHome = useLearningNavStore((s) => s.openHome);
+  const resetAppNav = useAppNavStore((s) => s.reset);
 
   useEffect(() => {
     const unsubscribe = initAuthListener();
@@ -22,8 +24,9 @@ export function RootGate(): JSX.Element {
   useEffect(() => {
     if (!isAuthenticated) {
       openHome();
+      resetAppNav();
     }
-  }, [isAuthenticated, openHome]);
+  }, [isAuthenticated, openHome, resetAppNav]);
 
   if (!authReady || isLoading) {
     return (
@@ -37,7 +40,7 @@ export function RootGate(): JSX.Element {
     return <AuthScreen />;
   }
 
-  return <LearningShell />;
+  return <MainShell />;
 }
 
 const styles = StyleSheet.create({
