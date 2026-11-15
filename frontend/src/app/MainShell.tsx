@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import { DictionaryShell } from "../features/dictionary/DictionaryShell";
 import { LearningShell } from "../features/learning/LearningShell";
+import { PracticeShell } from "../features/practice/PracticeShell";
 import { ComingSoonScreen } from "../features/shared/ComingSoonScreen";
 import { useAppNavStore } from "../stores/useAppNavStore";
 
@@ -11,13 +12,7 @@ export function MainShell(): JSX.Element {
     case "Dictionary":
       return <DictionaryShell />;
     case "Practice":
-      return (
-        <ComingSoonScreen
-          tab="Practice"
-          title="Practice Room"
-          description="Split-screen practice with live hand tracking is next on the roadmap."
-        />
-      );
+      return <PracticeShell />;
     case "Translate":
       return (
         <ComingSoonScreen
