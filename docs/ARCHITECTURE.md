@@ -305,3 +305,44 @@ service cloud.firestore {
 1. **Model Bundling:** The Core ASL Static Alphabet `.tflite` model ($\approx 2.4\text{ MB}$) is bundled directly inside the APK assets directory. The app is functional immediately after installation without internet connectivity.
 2. **Video Asset Caching:** High-definition demonstration videos use an LRU disk cache (`react-native-blob-util` or `expo-file-system`) capped at $200\text{ MB}$.
 3. **Firestore Offline Persistence:** Enabled via `enableIndexedDbPersistence()` / Native offline cache, allowing progress and streak tracking to function offline and sync deltas automatically when connection restores.
+
+
+---
+
+## 7. Translation Engine & ASL Grammar Architecture
+
+SIGNBRIDGE includes a dual-mode translation engine:
+1. **Rule-Based ASL Grammar Parser:** Fast offline tokenization, contraction expansion, stopword filtering, and lemmatization mapping English syntax to ASL topic-comment gloss.
+2. **AI Translation Fallback:** Async connection to Python/FastAPI backend for complex semantic restructuring and fingerspelling decomposition.
+3. **Sequential Sentence Player:** Seamless chaining of multiple video clips with pre-buffering, speed control (0.5x, 0.75x, 1x), and real-time token highlighting.
+
+```mermaid
+flowchart LR
+    A["English Input Text"] --> B["Contraction Expander"]
+    B --> C["Stopword Filter & Lemmatizer"]
+    C --> D["ASL Gloss Transformer (Topic-Comment)"]
+    D --> E["Dictionary Video Mapper"]
+    E --> F["Sentence Player Modal (Sequential Playback)"]
+```
+
+---
+
+## 8. Gamification & SM-2 Spaced Repetition Engine
+
+To maximize long-term sign retention, SIGNBRIDGE implements the SuperMemo SM-2 algorithm:
+
+$$\text{EF}' = \text{EF} + (0.1 - (5 - q) \times (0.08 + (5 - q) \times 0.02))$$
+
+- **Quality Rating ($q \in [0, 5]$):** 5 = Perfect, 4 = Hesitant, 3 = Difficult, <3 = Repeat.
+- **Interval Growth:** $I(1) = 1\text{ day}$, $I(2) = 6\text{ days}$, $I(n) = I(n-1) \times \text{EF}$.
+- **XP Progression:** Base $250\text{ XP}$ per level scaled by $1.25^{L-1}$.
+- **Daily Streak Tracker:** State machine comparing local midnight UTC timestamps to award consecutive streak badges.
+
+---
+
+## 9. Real-Time WebSocket Streaming Protocol
+
+For remote AI inference and practice validation:
+- **WebSocket Protocol:** `ws://<host>:<port>/ws/recognize`
+- **Heartbeat:** 15-second ping/pong intervals with exponential backoff reconnect.
+- **Landmark Normalization:** Hand keypoint translation invariant to wrist $(0,0)$ and scaled by Euclidean distance between wrist (0) and middle MCP (9).
