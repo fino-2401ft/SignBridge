@@ -49,9 +49,9 @@ export function QuizCard({
           const isChosen = selectedOption === idx;
           const isCorrect = idx === question.correctIndex;
 
-          let btnBg = colors.surface;
-          let borderColor = colors.border;
-          let textColor = colors.text;
+          let btnBg: string = colors.surface;
+          let borderColor: string = colors.border;
+          let textColor: string = colors.text;
 
           if (answered) {
             if (isCorrect) {

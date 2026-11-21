@@ -79,7 +79,7 @@ export function FlashCardReviewScreen({ onBack }: FlashCardReviewScreenProps): J
         </View>
       </View>
 
-      {sessionCompleted ? (
+      {sessionCompleted || !currentCard ? (
         <View style={styles.completeBox}>
           <Text style={styles.completeEmoji}>🎉</Text>
           <Text style={styles.completeTitle}>Review Session Complete!</Text>

@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import type { FlashCardItem } from "../../types/gamification";
-import { colors, radii, touchMin } from "../../utils/theme";
+import { colors, radii } from "../../utils/theme";
 import { getGestureVideoUrl } from "../../utils/videoMap";
 
 const { width: SCREEN_W } = Dimensions.get("window");
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   cardFace: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     borderWidth: 1.5,
