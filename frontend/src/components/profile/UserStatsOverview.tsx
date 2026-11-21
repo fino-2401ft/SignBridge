@@ -33,7 +33,7 @@ export function UserStatsOverview({ user }: UserStatsOverviewProps): JSX.Element
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.statIcon}>🔥</Text>
-          <Text style={styles.statValue}>{user.streakDays}</Text>
+          <Text style={styles.statValue}>{user.currentStreak}</Text>
           <Text style={styles.statLabel}>Day Streak</Text>
         </View>
 
