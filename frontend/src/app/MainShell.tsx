@@ -2,6 +2,7 @@ import type { JSX } from "react";
 import { DictionaryShell } from "../features/dictionary/DictionaryShell";
 import { LearningShell } from "../features/learning/LearningShell";
 import { PracticeShell } from "../features/practice/PracticeShell";
+import { TranslationShell } from "../features/translation/TranslationShell";
 import { ComingSoonScreen } from "../features/shared/ComingSoonScreen";
 import { useAppNavStore } from "../stores/useAppNavStore";
 
@@ -14,13 +15,7 @@ export function MainShell(): JSX.Element {
     case "Practice":
       return <PracticeShell />;
     case "Translate":
-      return (
-        <ComingSoonScreen
-          tab="Translate"
-          title="Live Translation"
-          description="Real-time ASL → text HUD will land after the Practice Room."
-        />
-      );
+      return <TranslationShell />;
     case "Profile":
       return (
         <ComingSoonScreen
